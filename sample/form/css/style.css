@@ -22,6 +22,10 @@ header {
     min-height:10vh;
 }
 header h1 { font-size: 2rem; }
+.notice {
+    margin-left:1rem;
+    font-size:.8rem;
+}
 
 noscript h2,
 section h2 {
