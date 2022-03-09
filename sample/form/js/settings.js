@@ -3,7 +3,7 @@ removeEventListener('load', onLoadUnavailable); // 非対応ブラウザ用の�
 
 const form = new Form('form1');
 form.controllerSettings({
-    expires : 120,
+    expires : 300,
     //onExpires : () => {}
 })
 .formSettings({
