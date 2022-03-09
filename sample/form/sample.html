@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self';">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>デモページ(Form)</title>
+<link rel="preload" href="js/legacy.js" as="script">
+<link rel="preload" href="css/style.css" as="style">
+<script src="js/legacy.js"></script>
+<script src="js/settings.js" type="module" async></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+<h1>サイトタイトル</h1>    
+</header>
+
+<noscript>
+<h2>利用できません。</h2>
+<p>本コンテンツはJavaScriptを使用します。JavaScriptを有効にしてください。</p>
+</noscript>
+
+<section id="unavailable" class="hide">
+<h2>利用できません。</h2>
+<p>ご利用のブラウザではサービスを利用できません。</p>
+</section><!-- /#umnavailable -->
+
+<section id="available" class="hide">
+
+<div class="page form agreement">
+<form action="#" method="post">
+<h2>フォーム</h2>
+
+<h3>同意確認</h3>
+<div class="item">
+<span class="input"><label><input type="checkbox" name="agreement" class=" vm-agreement" value="1" required>規約を読んだ上で同意します。</label></span>
+<span class="warning agreement"></span>
+</div>
+
+<ul class="button">
+<li><button type="button" class="back">戻る</button></li>
+<li><button type="submit" class="next">次の画面へ</button></li>
+</ul>
+
+</form>
+</div><!-- /.page.form.agreement -->
+
+<div class="page form enquate">
+<form action="#" method="post">
+<h2>フォーム</h2>
+
+<h3>アンケート</h3>
+
+<div class="item list">
+<span class="name"><span class="label vmfor-hobby">趣味</span><span class="s-required">[必須]</span></span>
+<ul class="input">
+    <li><label><input type="checkbox" name="hobby" class="required" value="1">読書</label></li>
+    <li><label><input type="checkbox" name="hobby" value="2">運動</label></li>
+    <li><label><input type="checkbox" name="hobby" value="3">その他</label></li>
+</ul>
+<span class="input"><label>その他の内容 <input type="text" name="etc-hobby" id="i-etc-hobby" maxlength="20"></label></span>
+<span class="warning"><span class="hobby"></span><span class="etc-hobby"></span></span>
+</div>
+
+<ul class="button">
+<li><button type="button" class="back">戻る</button></li>
+<li><button type="submit" class="next">次の画面へ</button></li>
+</ul>
+
+</form>
+</div><!-- /.page.form.enquate -->
+
+<div class="page form userinfo">
+<form action="#" method="post">
+<h2>フォーム</h2>
+
+<h3>基本情報</h3>
+
+<div class="item">
+<span class="name"><label for="i_lastname">姓</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="text" id="i_lastname" name="lastname" maxlength="10" required></span>
+<span class="warning lastname"></span>
+</div>
+<div class="item">
+<span class="name"><label for="i_firstname">名</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="text" id="i_firstname" name="firstname" maxlength="10" required></span>
+<span class="warning firstname"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_kanalname">姓（カナ）</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="text" id="i_kanalname" name="kanalname" class="cfr-htk vmt-katakana" maxlength="10" pattern="^[\p{sc=Kana}\p{sc=Hira}\u{30FC}\u{FF70}]+$" required></span>
+<span class="warning kanalname"></span>
+</div>
+<div class="item">
+<span class="name"><label for="i_kanafname">名（カナ）</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="text" id="i_kanafname" name="kanafname" class="cfr-htk vmt-katakana" maxlength="10" pattern="^[\p{sc=Kana}\p{sc=Hira}\u{30FC}\u{FF70}]+$" required></span>
+<span class="warning kanafname"></span>
+</div>
+
+<div class="item list">
+<span class="name"><span class="label vmfor-gender">性別</span><span class="s-required">[必須]</span></span>
+<ul class="input">
+    <li><label><input type="radio" name="gender" value="1" required>男性</label></li>
+    <li><label><input type="radio" name="gender" value="2">女性</label></li>
+    <li><label><input type="radio" name="gender" value="0">回答しない</label></li>
+</ul>
+<span class="warning gender"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_age">年齢</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="number" id="i_age" name="age" class="w3rem vm-age cfr-wth vmt-hw_number" min="12" max="125" inputmode="numeric" required>歳</span>
+<span class="warning age"></span>
+</div>
+
+<div class="item parental_consent">
+<ul class="input">
+    <li><label><input type="checkbox" name="parental_consent" class="vm-parental_consent" value="1">15歳未満の方は親権者の同意を得ました。</label></li>
+</ul>
+<span class="warning parental_consent"></span>
+</div>
+
+<ul class="button">
+<li><button type="button" class="back">戻る</button></li>
+<li><button type="submit" class="next">次の画面へ</button></li>
+</ul>
+
+</form>
+</div><!-- /.page.form.userinfo -->
+
+<div class="page form address">
+<form action="#" method="post">
+<h2>フォーム</h2>
+
+<h3>住所、連絡先</h3>
+
+<div class="item">
+<span class="name"><label for="i_postcode">郵便番号</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="text" id="i_postcode" name="postcode" class="cfr-wth w7rem" minlength="7" maxlength="7" pattern="^[\d０-９]+$" inputmode="numeric" required></span>
+<span class="warning postcode"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_prefecture">都道府県</label><span class="s-required">[必須]</span></span>
+<span class="input"><select name="prefecture" id="i_prefecture" required>
+    <option value="">選択してください。</option>
+    <option value="01">北海道</option><option value="02">青森県</option><option value="03">岩手県</option><option value="04">宮城県</option><option value="05">秋田県</option><option value="06">山形県</option><option value="07">福島県</option><option value="08">茨城県</option><option value="09">栃木県</option><option value="10">群馬県</option>
+    <option value="11">埼玉県</option><option value="12">千葉県</option><option value="13">東京都</option><option value="14">神奈川県</option><option value="15">新潟県</option><option value="16">富山県</option><option value="17">石川県</option><option value="18">福井県</option><option value="19">山梨県</option><option value="20">長野県</option>
+    <option value="21">岐阜県</option><option value="22">静岡県</option><option value="23">愛知県</option><option value="24">三重県</option><option value="25">滋賀県</option><option value="26">京都府</option><option value="27">大阪府</option><option value="28">兵庫県</option><option value="29">奈良県</option><option value="30">和歌山県</option>
+    <option value="31">鳥取県</option><option value="32">島根県</option><option value="33">岡山県</option><option value="34">広島県</option><option value="35">山口県</option><option value="36">徳島県</option><option value="37">香川県</option><option value="38">愛媛県</option><option value="39">高知県</option><option value="40">福岡県</option>
+    <option value="41">佐賀県</option><option value="42">長崎県</option><option value="43">熊本県</option><option value="44">大分県</option><option value="45">宮崎県</option><option value="46">鹿児島県</option><option value="47">沖縄県</option>
+</select></span>
+<span class="warning prefecture"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_address">市区町村町名番地</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="text" id="i_address" name="address" class="w20rem" maxlength="50" required></span>
+<span class="warning address"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_extaddress">マンション名、その他住所情報</label></span>
+<span class="input"><input type="text" id="i_extaddress" class="w20rem" name="extaddress" maxlength="50"></span>
+<span class="warning extaddress"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_phone">電話番号</label><span class="s-required">[必須]</span></span>
+<span class="input"><input type="tel" id="i_phone" name="phone" class="cfr-wth" minlength="10" maxlength="11" pattern="^[0０](?:[1-9１-９][0０][0-9０-９]{8}|[1-9１-９]{2}[0-9０-９]{7})$" required></span>
+<span class="warning phone"></span>
+</div>
+
+<div class="item list">
+<span class="name"><span class="label vmfor-newsletter">メールマガジン配信</span><span class="s-required">[必須]</span></span>
+<ul class="input">
+    <li><label><input type="radio" name="newsletter" value="1" required>配信する</label></li>
+    <li><label><input type="radio" name="newsletter" value="2">配信しない</label></li>
+</ul>
+<span class="warning newsletter"></span>
+</div>
+
+<div class="item">
+<span class="name"><label for="i_email">メールアドレス</label></span>
+<span class="input"><input type="email" id="i_email" name="email" maxlength="255"></span>
+<span class="warning email"></span>
+</div>
+
+<ul class="button">
+<li><button type="button" class="back">戻る</button></li>
+<li><button type="submit" class="next">次の画面へ</button></li>
+</ul>
+
+</form>
+</div><!-- /.page.form.address -->
+
+<div class="page confirm">
+<form action="#" method="post">
+<h2>内容確認</h2>
+
+<div class="cfm-agreement">
+<h3>同意確認</h3>
+
+<!-- <div class="button left"><button type="button" class="modify agreement">修正する</button></div> -->
+
+<div class="item">
+<ul class="value">
+    <li class="fccl-agreement v-1">規約を読んだ上で同意します。</li>
+</ul>
+</div>
+
+</div><!-- /.cfm-agreement -->
+<div class="cfm-enquate">
+
+<h3>アンケート</h3>
+
+<div class="button left"><button type="button" class="modify enquate">アンケートを修正する</button></div>
+
+<div class="item">
+<span class="name">趣味</span>
+<ul class="value">
+    <li class="c fccl-hobby v-1">読書</li>
+    <li class="fccl-hobby v-2">運動</li>
+    <li class="fccl-hobby v-3">その他（<span class="value fcc-etc-hobby"></span>）</li>
+</ul>
+</div>
+
+</div><!-- .cfm-enquate -->
+<div class="cfm-userinfo">
+
+<h3>基本情報</h3>
+
+<div class="button left"><button type="button" class="modify userinfo">基本情報を修正する</button></div>
+
+<div class="item">
+<span class="name">姓</span>
+<span class="value fcc-lastname"></span>
+</div>
+<div class="item">
+<span class="name">名</span>
+<span class="value fcc-firstname"></span>
+</div>
+
+<div class="item">
+<span class="name">姓（カナ）</span>
+<span class="value fcc-kanalname"></span>
+</div>
+
+<div class="item">
+<span class="name">名（カナ）</span>
+<span class="value fcc-kanafname"></span>
+</div>
+
+<div class="item">
+<span class="name">性別</span>
+<ul class="value">
+    <li class="fccl-gender v-1">男性</li>
+    <li class="fccl-gender v-2">女性</li>
+    <li class="fccl-gender v-0">回答しない</li>
+</ul>
+</div>
+
+<div class="item">
+<span class="name">年齢</span>
+<span class="value"><span class="fcc-age"></span>歳</span>
+</div>
+
+<div class="item">
+<ul class="value">
+    <li class="fccl-parental_consent v-">（親権者同意の対象外）</li>
+    <li class="fccl-parental_consent v-1">親権者の同意を得ました。</li>
+</ul>
+</div>
+
+</div><!-- .cfm-userinfo -->
+<div class="cfm-address">
+
+<h3>住所、連絡先</h3>
+
+<div class="button left"><button type="button" class="modify address">住所、連絡先を修正する</button></div>
+
+<div class="item">
+<span class="name">郵便番号</span>
+<span class="value fcc-postcode"></span>
+</div>
+
+<div class="item">
+<span class="name">都道府県</span>
+<ul class="value">
+    <li class="fccl-prefecture v-">選択してください。</li>
+    <li class="fccl-prefecture v-01">北海道</li><li class="fccl-prefecture v-02">青森県</li><li class="fccl-prefecture v-03">岩手県</li><li class="fccl-prefecture v-04">宮城県</li><li class="fccl-prefecture v-05">秋田県</li><li class="fccl-prefecture v-06">山形県</li><li class="fccl-prefecture v-07">福島県</li><li class="fccl-prefecture v-08">茨城県</li><li class="fccl-prefecture v-09">栃木県</li><li class="fccl-prefecture v-10">群馬県</li>
+    <li class="fccl-prefecture v-11">埼玉県</li><li class="fccl-prefecture v-12">千葉県</li><li class="fccl-prefecture v-13">東京都</li><li class="fccl-prefecture v-14">神奈川県</li><li class="fccl-prefecture v-15">新潟県</li><li class="fccl-prefecture v-16">富山県</li><li class="fccl-prefecture v-17">石川県</li><li class="fccl-prefecture v-18">福井県</li><li class="fccl-prefecture v-19">山梨県</li><li class="fccl-prefecture v-20">長野県</li>
+    <li class="fccl-prefecture v-21">岐阜県</li><li class="fccl-prefecture v-22">静岡県</li><li class="fccl-prefecture v-23">愛知県</li><li class="fccl-prefecture v-24">三重県</li><li class="fccl-prefecture v-25">滋賀県</li><li class="fccl-prefecture v-26">京都府</li><li class="fccl-prefecture v-27">大阪府</li><li class="fccl-prefecture v-28">兵庫県</li><li class="fccl-prefecture v-29">奈良県</li><li class="fccl-prefecture v-30">和歌山県</li>
+    <li class="fccl-prefecture v-31">鳥取県</li><li class="fccl-prefecture v-32">島根県</li><li class="fccl-prefecture v-33">岡山県</li><li class="fccl-prefecture v-34">広島県</li><li class="fccl-prefecture v-35">山口県</li><li class="fccl-prefecture v-36">徳島県</li><li class="fccl-prefecture v-37">香川県</li><li class="fccl-prefecture v-38">愛媛県</li><li class="fccl-prefecture v-39">高知県</li><li class="fccl-prefecture v-40">福岡県</li>
+    <li class="fccl-prefecture v-41">佐賀県</li><li class="fccl-prefecture v-42">長崎県</li><li class="fccl-prefecture v-43">熊本県</li><li class="fccl-prefecture v-44">大分県</li><li class="fccl-prefecture v-45">宮崎県</li><li class="fccl-prefecture v-46">鹿児島県</li><li class="fccl-prefecture v-47">沖縄県</li>
+</ul>
+</div>
+
+<div class="item">
+<span class="name">市区町村町名番地</span>
+<span class="value fcc-address"></span>
+</div>
+
+<div class="item">
+<span class="name">マンション名、その他住所情報</span>
+<span class="value fcc-extaddress"></span><span class="fccl-extaddress v-">（未記入）</span>
+</div>
+
+<div class="item">
+<span class="name">電話番号</span>
+<span class="value fcc-phone"></span>
+</div>
+
+<div class="item">
+<span class="name">メールマガジン配信</span>
+<ul class="value">
+    <li class="fccl-newsletter v-1">希望する</li>
+    <li class="fccl-newsletter v-2">希望しない</li>
+</ul>
+</div>
+
+<div class="item">
+<span class="name">メールアドレス</span>
+<span class="value fcc-email"></span><span class="fccl-email v-">（未記入）</span>
+</div>
+
+</div><!-- .cfm-address -->
+
+<div class="button"><button type="submit" class="apply">登録する</button></div>
+<input type="hidden" name="hiddenvall" value="abcdefghijklnm">
+</form>
+</div><!-- /.page.confirm -->
+
+<div class="page applied">
+<h2>登録完了</h2>
+<p>登録完了です。</p>
+</div><!-- /.page.applied -->
+
+<div class="page error">
+<form>
+<h2>Error</h2>
+<p class="reason"></p>
+
+</form>
+</div><!-- /.page.error -->
+</section><!-- /#available -->
+
+</body>
+</html>
