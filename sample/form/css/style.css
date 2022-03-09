@@ -23,7 +23,7 @@ header {
 }
 header h1 { font-size: 2rem; }
 .notice {
-    margin-left:1rem;
+    padding-left:1rem;
     font-size:.8rem;
 }
 
