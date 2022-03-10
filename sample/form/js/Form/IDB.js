@@ -7,6 +7,9 @@ export class IDB {
     #storeName = undefined;
     #storeSettings = IDB.#DefStoreSettings;
 
+    #tran = undefined;
+    #store = undefined;
+
     constructor (dbName = new String(), version = 1) {
         this.dbName = dbName;
         this.version = version;
@@ -65,51 +68,58 @@ export class IDB {
     }
 
     transaction (mode) {
-        const tran = this.#db.transaction(this.#storeName, mode);
-        const store = tran.objectStore(this.#storeName);
-        return [tran, store];
+        if (this.#tran == undefined) {
+            this.#tran = this.#db.transaction(this.#storeName, mode);
+            this.#tran.addEventListener('complete', event => {
+                this.#tran = undefined;
+                this.#store = undefined;
+            });
+            this.#store = this.#tran.objectStore(this.#storeName);
+        }
+        return [this.#tran, this.#store];
     }
 
     static #getOnError = (event) => { throw event.target.error; }
     static #getOnSuccess (event, key) { if (IDB.#D) console.log(`Success get method.(key: ${key})`); }
 
-    get (key, onerror = IDB.#getOnError, onsuccess = IDB.#getOnSuccess) {
-        const [tran, store] = this.transaction('readonly');
+    #genPromise (req) {
+        return new Promise((resolve, reject) => {
+            req.addEventListener('error', event => reject([req, event]) );
+            req.addEventListener('success', event => resolve([req, event]) );            
+        });
+    }
+
+    get (key) {
+        const [, store] = this.transaction('readonly');
         const req = store.get(key);
-        req.addEventListener('error', onerror);
-        req.addEventListener('success', event => onsuccess(event, key));
-        return req;
+        return this.#genPromise(req);
     }
 
     static #putOnError = IDB.#getOnError;
     static #putOnSuccess = (event) => {  if (IDB.#D) console.log(`Success put method.`); }
 
-    put (data = {}, onerror = IDB.#putOnError, onsuccess = IDB.#putOnSuccess) {
-        const [tran, store] = this.transaction('readwrite');
+    put (data = {}) {
+        const [, store] = this.transaction('readwrite');
         const req = store.put(data);
-        req.addEventListener('error', onerror);
-        req.addEventListener('success', onsuccess);
+        return this.#genPromise(req);
     }
 
     static #clearOnError = IDB.#getOnError;
     static #clearOnSuccess = (event, storeName) => { if (IDB.#D) console.log(`objectStore "${storeName}" is cleared.`); };
 
-    clear (onerror = IDB.#clearOnError, onsuccess = IDB.#clearOnSuccess) {
-        const [tran, store] = this.transaction('readwrite');
+    clear () {
+        const [, store] = this.transaction('readwrite');
         const req = store.clear();
-        req.addEventListener('error', onerror);
-        req.addEventListener('success', event => onsuccess(event, this.#storeName) );
-        return req;
+        return this.#genPromise(req);
     }
 
     static #deleteOnError = IDB.#getOnError;
     static #deleteOnSuccess = (event, dbName) => { if (IDB.#D) console.log(`database "${dbName}" is deleted.`); };
 
-    delete (onerror = IDB.#deleteOnError, onsuccess = IDB.#deleteOnSuccess) {
+    delete () {
         this.#db.close();
         const req = indexedDB.deleteDatabase(this.#dbName);
-        req.addEventListener('error', onerror);
-        req.addEventListener('success', event => onsuccess(event, this.#dbName));
+        return this.#genPromise(req);
     }
 
     static #isEmpty (string) {

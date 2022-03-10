@@ -11,7 +11,7 @@ export class FCController {
     static #D = false;
     static #nameList = {};
     static #NotActive = () => {
-        let elm = document.createElement('div');
+        const elm = document.createElement('div');
         elm.appendChild(document.createElement('form'));
         return new FCBase(elm);
     };
@@ -29,11 +29,12 @@ export class FCController {
     #stoID = undefined;
 
     #idb = undefined;
+    #useIdb = true;
 
     #cbfUploadDb = undefined;
     #siID = undefined;
 
-    constructor (name) {
+    constructor (name, useIdb = true) {
         if (!name) { throw new TypeError('"name" is not defined.'); }
         if (name in FCController.#nameList) { throw new TypeError('"name" is already in use.'); }
         FCController.#nameList[name] = true;
@@ -45,13 +46,14 @@ export class FCController {
 
         this.#fcCol = new Map();
         this.#data = new Map ();
-        this.#idbSetting();
+        this.#useIdb = useIdb;
+        if (useIdb) { this.#idbSetting(); }
     }
     append(key, type, parentNode, noStat) {
         if (key.length == 0 || this.#fcCol.has(key)) {
             throw new TypeError('append');
         }
-        let fc = this.#genFC(type, parentNode, noStat);
+        const fc = this.#genFC(type, parentNode, noStat);
         this.#fcCol.set(key, fc);
         return fc;
     }
@@ -68,33 +70,33 @@ export class FCController {
 
     #viewNext(fc, list, from, errMessage) {
         if (fc instanceof FCBase == false) { throw new TypeError(from); }
-        let index = list.indexOf(fc);
+        const index = list.indexOf(fc);
         if (index == -1) { throw new FCNotExistsExeption('next'); }
         if (index + 1 == list.length) { throw new Error(errMessage); }
         list[index + 1].view();        
     }
     next (fc) {
-        let list = Array.from(this.#fcCol.values());
+        const list = Array.from(this.#fcCol.values());
         this.#viewNext(fc, list, 'next', 'Target is last element.');
     }
     back (fc) {
-        let list = Array.from(this.#fcCol.values()).reverse();
+        const list = Array.from(this.#fcCol.values()).reverse();
         this.#viewNext(fc, list, 'back', 'Target is first element.');
     }
     getKey(fc) {
         if (fc instanceof FCBase == false) { throw new TypeError('getKey'); }
-        let result = Array.from(this.#fcCol.entries()).find(target => target[1] === fc);
+        const result = Array.from(this.#fcCol.entries()).find(target => target[1] === fc);
         if (result == undefined) { throw new FCNotExistsExeption('getKey'); }
         return result[0];
     }
     #genFC (type, parentNode, noStat) {
-        let fc = new type(parentNode);
+        const fc = new type(parentNode);
         if (fc instanceof FCBase == false) { TypeError('"type" is not instance of FCBase.'); }
         fc.addEventList('beforeView', this.#genDefaultBeforeView(noStat));
         return fc;
     }
     #genDefaultBeforeView (noStat) {
-        let ctr = this;
+        const ctr = this;
         return myFc => {
             setTimeout(() => ctr.scroll(), 1);
             if (this.#multiView == false && ctr.#active !== FCController.#NotActive) {
@@ -107,23 +109,23 @@ export class FCController {
     }
 
     setData (key) {
-        let fc = this.get(key); //let fc = new FCForm();
-        let flg = false;
+        const fc = this.get(key);
         this.#data.set(key, fc.getCollectedFormData());
+        if (this.#useIdb == false) { return; }
 
-        let [tran, store] = this.#idb.transaction('readwrite');
-        let req = store.put({ page : key, formData : this.#genSimpleObj(fc.getCollectedFormData())});
-        req.addEventListener('error', event => {
-            throw req.error;
+        const pr = this.#idb.put({
+            page : key,
+            formData : this.#genSimpleObj(fc.getCollectedFormData())
         });
-        if (FCController.#D) req.addEventListener('success', event => { console.log('setData(db) success'); });
+        pr.catch(([req, ]) => { throw req.error; });
+        if (FCController.#D) { pr.then(() => { console.log('setData(db) success'); }); }
     }
     getData (key) {
         if (this.#data.has(key) == false) { throw new FCNotExistsExeption(`getData, key: ${key}`); }
         return this.#data.get(key);
     }
     getAllData () {
-        let newData = new FormData();
+        const newData = new FormData();
         this.#data.forEach( data => {
             data.forEach((v, k) => newData.append(k, v) );
         });
@@ -140,7 +142,7 @@ export class FCController {
     }
     #initExpires () {
         if (this.#expires <= 0) { return; }
-        let strExpires = sessionStorage.getItem(this.#keyExpires);
+        const strExpires = sessionStorage.getItem(this.#keyExpires);
         if (strExpires == '' || strExpires == 0 || strExpires == null) {
             sessionStorage.setItem(this.#keyExpires, Number(new Date()) + (this.#expires * 1000));
         }
@@ -156,9 +158,9 @@ export class FCController {
         return new Date( Number(sessionStorage.getItem(this.#keyExpires)) );
     }
     get remainingTime () {
-        let strExpires = sessionStorage.getItem(this.#keyExpires);
+        const strExpires = sessionStorage.getItem(this.#keyExpires);
         if (strExpires == 0) { return 0; }
-        let miriSec = Number(strExpires) - Number(new Date());
+        const miriSec = Number(strExpires) - Number(new Date());
         return miriSec / 1000;
     }
     updateExpires () {
@@ -172,35 +174,35 @@ export class FCController {
     get isConfirm () {
         return sessionStorage.getItem(this.#keyIsConfirm) == '1' ? true : false;
     }
-    #genPromiseLoadFormDatas (tran, store, key) {
+    #genPromiseLoadFormDatas (key) {
         if (FCController.#D) console.log(`genPrLoadFormData, key: ${key}`);
         return new Promise( (resolve, reject) =>{
             if (FCController.#D) console.log(`exec Promise, key: ${key}`);
-            let req = store.get(key);
-            req.addEventListener('error', event => {
-                reject(req);
-            });
-            req.addEventListener('success', event => {
-                let fc = this.#fcCol.get(key);
+            this.#idb.get(key)
+            .then(([req, ]) => {
+                const fc = this.#fcCol.get(key);
                 if (req.result != undefined) {
                     fc.clearValues();
                     fc.setValues(req.result.formData);
                     if (FCController.#D) console.log(`success! ${key}`);
                 }
-                let data = fc.getCollectedFormData();
+                const data = fc.getCollectedFormData();
                 this.#data.set(key, data);
                 resolve(req);
-            });
+            })
+            .catch(() => { reject(req); });
         } );
     }
 
     async start () {
+        if (this.#useIdb == false) {
+            return this.#startNoUseIdb();
+        }
         try {
-            let idbReq = await this.#idb.open();
-            let promises = [];
-            let [tran, store] = this.#idb.transaction('readonly');
+            const idbReq = await this.#idb.open();
+            const promises = [];
             this.#fcCol.forEach((fc, key) => {
-                promises.push(this.#genPromiseLoadFormDatas(tran, store, key));
+                promises.push(this.#genPromiseLoadFormDatas(key));
             });
             await Promise.allSettled(promises);
             this.#initExpires();
@@ -224,6 +226,18 @@ export class FCController {
             }
         }
     }
+    async #startNoUseIdb () {
+        try {
+            this.#fcCol.forEach((fc, key) => this.setData(key) );
+            this.#initExpires();
+            this.#checkExpires();
+            this.hideAll();
+            this.#firstView();
+            return;
+        } catch (reason) {
+            throw reason instanceof Error ? reason : new Error(reason);
+        }
+    }
 
     clear () { this.#tryClear(); }
     #tryClear() {
@@ -238,6 +252,7 @@ export class FCController {
 
         this.clearValues();
         sessionStorage.clear();
+        if (this.#useIdb == false) { return; }
         if (this.#idb.hasDb) {
             this.#idb.db.close();
             this.#idb.delete();
@@ -248,7 +263,7 @@ export class FCController {
         clearTimeout(this.#stoID);
     }
     #isExpires () {
-        let expires = sessionStorage.getItem(this.#keyExpires);
+        const expires = sessionStorage.getItem(this.#keyExpires);
         if (!expires) { return false; }
         return expires <= Number(new Date()) ? true : false;
     }
@@ -258,8 +273,8 @@ export class FCController {
         this.expires = this.expires;
     }
     #firstView () {
-        let key = sessionStorage.getItem(this.#keyStat);
-        let fcMap = this.#fcCol;
+        const key = sessionStorage.getItem(this.#keyStat);
+        const fcMap = this.#fcCol;
         if (fcMap.has(key)) {
             fcMap.get(key).view();
         } else {
@@ -275,12 +290,12 @@ export class FCController {
         }
     }
     #setTimerExpires () {
-        let timeout = Number(sessionStorage.getItem(this.#keyExpires)) - Number(new Date());
+        const timeout = Number(sessionStorage.getItem(this.#keyExpires)) - Number(new Date());
         if (this.#stoID != undefined) {
             clearTimeout(this.#stoID);
             this.#stoID == undefined;
         }
-        let ctr = this;
+        const ctr = this;
         this.#stoID = setTimeout(() => {
             clearTimeout(this.#stoID);
             this.#stoID == undefined;
@@ -294,9 +309,7 @@ export class FCController {
         }, false);
     }
     clearValues () {
-        for (let fc of this.#fcCol.values()) {
-            fc.clearValues();
-        }
+        this.#fcCol.forEach(fc => fc.clearValues());
     }
     scroll (xCoord = 0, yCoord = 0) {
         try {
@@ -307,8 +320,7 @@ export class FCController {
     }
 
     #idbSetting () {
-        let version = 1;
-        let idb = new IDB(this.#keyIdbName, version);
+        const idb = new IDB(this.#keyIdbName, 1);
         idb.storeSettings(this.#keyIdbStore, { keyPath : 'page' }, store => {
             store.createIndex('formData', 'formData', {unique : false});
         });
@@ -316,15 +328,14 @@ export class FCController {
     }
 
     #updateDB () {
-        let promises = [];
-        let [tran, store] = this.#idb.transaction('readwrite');
         this.#fcCol.forEach((fc, key) => {
-            let data = (this.isConfirm ? this.getData(key) : fc.getCollectedFormData());
-            let req = store.put({ page : key, formData : this.#genSimpleObj(data)});
-            req.addEventListener('error', event => {
-                console.error(req.error);
+            const data = (this.isConfirm ? this.getData(key) : fc.getCollectedFormData());
+            const pr = this.#idb.put({
+                page : key,
+                formData : this.#genSimpleObj(data)
             });
-            if (FCController.#D) req.addEventListener('success', event => { console.log('success updateDB'); });
+            pr.catch(([req, ]) => { console.error(req.error); });
+            if (FCController.#D) pr.then(() => { onsole.log('success updateDB'); });
         });
     }
     #addIDBEvent () {
@@ -332,7 +343,7 @@ export class FCController {
         addEventListener('beforeunload', this.#cbfUploadDb);
     }
     #genSimpleObj (formData) {
-        let obj = {};
+        const obj = {};
         formData.forEach((value, key) => {
             obj[key] = formData.getAll(key);
         });

@@ -41,8 +41,8 @@ export class Form {
     #confirmOnSubmit = Form.#defaultConfirmOnSubmit;
 
     #isSetEvent = false;
-    constructor (name) {
-        this.#ctr = new FCController(name);
+    constructor (name, useIdb = true) {
+        this.#ctr = new FCController(name, useIdb);
         this.#appendList = Array();
         this.#initList = Array();
         this.controllerSettings();
