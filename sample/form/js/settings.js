@@ -55,7 +55,6 @@ form.controllerSettings({
 })
 .addInitTask(ctr => {
     const fc = ctr.get('address');
-    const stoid = undefined;
     // 条件付き必須の定義
     fc.addCondRequire('email', 'newsletter', '1', 'メールマガジンの配信希望された場合は必須です。', false); //メールマガジンを希望した場合、Emailは必須
     // 郵便番号の拡張検査（遅延して処理結果を表示する演出をするためにsetTimeoutを利用しています）
