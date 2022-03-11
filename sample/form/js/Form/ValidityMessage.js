@@ -27,7 +27,10 @@ export class ValidityMessage {
         return this.#listTypeName;
     }
 
-    getCustomMessage (elm) {
+    getCustomMessage (elm, marginMaxlength = 0) {
+        if (Number.isInteger(marginMaxlength) == false || marginMaxlength < 0) {
+            throw new TypeError('getCustomMessage');
+        }
         if (elm.classList.contains('vmNo') == true) {
             if (elm.validationMessage.length > 0) {
                 return new VMResult(
@@ -65,8 +68,13 @@ export class ValidityMessage {
         } else if (validityState.tooShort) {
             message = cfsm.tooShort(isTypeEnter, elm, this);
             reason = new VMSErrorTooShort(elm.name);
-        } else if (elm.maxLength > -1 && elm.value.length > elm.maxLength) {
+        //} else if (elm.maxLength > -1 && elm.value.length > elm.maxLength) {
+        //    message = cfsm.tooLong(isTypeEnter, elm, this);
+        //    reason = new VMSErrorTooLong(elm.name);
+        } else if (elm.maxLength > -1 && elm.value.length > elm.maxLength - marginMaxlength) {
+            elm.maxLength -= marginMaxlength;
             message = cfsm.tooLong(isTypeEnter, elm, this);
+            elm.maxLength += marginMaxlength;
             reason = new VMSErrorTooLong(elm.name);
         } else if (elm.minLength > -1 && elm.value.length < elm.minLength) {
             message = cfsm.tooShort(isTypeEnter, elm, this);

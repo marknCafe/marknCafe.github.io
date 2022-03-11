@@ -16,6 +16,8 @@ export class FCForm extends FCBase {
 
     #delayTime = 1500;
 
+    #marginMaxLength = 5;
+
     constructor (elmForm) {
         super(elmForm);
         this.form.noValidate = true;
@@ -34,6 +36,7 @@ export class FCForm extends FCBase {
         this.addEventList('input', FCForm.#genCbfuncInput());
         this.addEventList('keydown', FCForm.#genCbfuncKeydown());
         this.#setupReplaceEvent();
+        this.#setMarginMaxLength();
     }
 
     extendValidityMessage(key, vm) {
@@ -72,6 +75,28 @@ export class FCForm extends FCBase {
         this.#delayTime = miriSec;
     }
     get delayTime () { return this.#delayTime; }
+
+    set marginMaxLength (int) {
+        if (Number.isInteger(int) == false) { throw new TypeError('marginMaxLength'); }
+        if (int < 0) { throw new TypeError('marginMaxLength'); }
+        this.#initMarginMaxLength();
+        this.#marginMaxLength = int;
+        this.#setMarginMaxLength();
+    }
+    get marginMaxLength () { return this.#marginMaxLength; }
+
+    #setMarginMaxLength () {
+        this.form.querySelectorAll('input').forEach(elm => {
+            if (elm.maxLength == -1) { return; }
+            elm.maxLength += this.#marginMaxLength;
+        });
+    }
+    #initMarginMaxLength () {
+        this.form.querySelectorAll('input').forEach(elm => {
+            if (elm.maxLength == -1) { return; }
+            elm.maxLength -= this.#marginMaxLength;
+        });
+    }
 
     addExtValidation (key = '', promise = FCExtendValidation.DftAsyncFunc, message = '', eventType = []) {
         if (this.has(key) == false) { throw new FCNotExistsExeption('addExtValidation'); }
@@ -329,7 +354,7 @@ export class FCForm extends FCBase {
 
     async #getCustomMessage (elm, event) {
         const vm = this.#getValidityMessage(elm);
-        const result = vm.getCustomMessage(elm);
+        const result = vm.getCustomMessage(elm, this.#marginMaxLength);
         if (result.isInvalid) {
             return result;
         }
