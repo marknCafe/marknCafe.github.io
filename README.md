@@ -12,4 +12,4 @@ GitHubを学習するために作成しました。
 
 ## Demo code
 
-* [Form](./sample/form/sample.html) ([Click here for repository](https://github.com/marknCafe/marknCafe.github.io/tree/main/sample/form))
+* [Form](https://markncafe.github.io/sample/form/sample.html) ([Click here for repository](https://github.com/marknCafe/marknCafe.github.io/tree/main/sample/form))
