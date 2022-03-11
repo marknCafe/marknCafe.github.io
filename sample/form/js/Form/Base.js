@@ -161,6 +161,8 @@ export class FCBase {
     setValue (key, value) { this.#list.setValue(key, value); }
     setValues (data) { this.#list.setValues(data); }
     getCollectedFormData () { return this.#list.getCollectedFormData(); }
+    querySelector (query) { return this.#list.parentNode.querySelector(query); }
+    querySelectorAll(query) { return this.#list.parentNode.querySelectorAll(query); }
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     /* イベント管理関連 */
     addEventList (type = '', func = FCBase.#DefaultCBFn) {
@@ -170,7 +172,7 @@ export class FCBase {
         this.#eventList.removeEventList(type, func);
     }
     addEventFormItem (key, {blur, click, keydown, input} = new FCEventHandlerList()) {
-        this.form.querySelectorAll(`[name=${key}]`).forEach(elm => {
+        this.querySelectorAll(`[name=${key}]`).forEach(elm => {
             if (blur) elm.addEventListener('blur', blur, false);
             const tagName = elm.tagName;
             const isInput = tagName == 'INPUT' ? true : false;

@@ -86,13 +86,13 @@ export class FCForm extends FCBase {
     get marginMaxLength () { return this.#marginMaxLength; }
 
     #setMarginMaxLength () {
-        this.form.querySelectorAll('input').forEach(elm => {
+        this.querySelectorAll('input').forEach(elm => {
             if (elm.maxLength == -1) { return; }
             elm.maxLength += this.#marginMaxLength;
         });
     }
     #initMarginMaxLength () {
-        this.form.querySelectorAll('input').forEach(elm => {
+        this.querySelectorAll('input').forEach(elm => {
             if (elm.maxLength == -1) { return; }
             elm.maxLength -= this.#marginMaxLength;
         });
@@ -129,7 +129,7 @@ export class FCForm extends FCBase {
     addCondRequire (baseKey, targetKey, condVal, message, noUseDisabled = false, eventType = []) {
         if (this.has(baseKey) == false) { throw new FCNotExistsExeption('addCondRequire, baseKey'); }
         if (this.has(targetKey) == false) { throw new FCNotExistsExeption('addCondRequire, targetKey'); }
-        if ((condVal instanceof Object) == false && this.form.querySelectorAll(`[name="${targetKey}"][value="${condVal}"]`).length == 0) {
+        if ((condVal instanceof Object) == false && this.querySelectorAll(`[name="${targetKey}"][value="${condVal}"]`).length == 0) {
             console.log(new FCNotExistsExeption(`addCondRequire, settings: base=${baseKey}, target=${targetKey}, value=${condVal}`));
         }
 
@@ -145,8 +145,8 @@ export class FCForm extends FCBase {
 
         if (noUseDisabled) { return; }
 
-        const baseElms = this.form.querySelectorAll(`[name="${baseKey}"]`);
-        const targetElms = this.form.querySelectorAll(`[name="${targetKey}"]`);
+        const baseElms = this.querySelectorAll(`[name="${baseKey}"]`);
+        const targetElms = this.querySelectorAll(`[name="${targetKey}"]`);
         const fc = this;
         const cbfInput = event => {
             if (fc.isEqual(targetKey, condVal)) {
@@ -220,7 +220,7 @@ export class FCForm extends FCBase {
 
     #setupReplaceEvent () {
         this.forEach((elm, key) => {
-            this.form.querySelectorAll(`[name=${key}]`)
+            this.querySelectorAll(`[name=${key}]`)
                 .forEach(elm => this.#addReplaceEvent(elm));
         });
     }
@@ -319,7 +319,7 @@ export class FCForm extends FCBase {
         if (elm.name in this.#forcedValidation) {
             this.#forcedValidation[elm.name]
             .forEach(key => {
-                this.validation(this.form.querySelector(`[name=${key}]`), noUseMessage, event)
+                this.validation(this.querySelector(`[name=${key}]`), noUseMessage, event)
                 .catch(result => this.#cbfCatchValidPromise(result, 'forcedValidation') );
             });
         }
@@ -443,7 +443,7 @@ export class FCForm extends FCBase {
 
     addItem (elm) {
         super.addItem(elm);
-        this.form.querySelectorAll(`[name="${elm.name}"]`).forEach(targetElm => {
+        this.querySelectorAll(`[name="${elm.name}"]`).forEach(targetElm => {
             targetElm.removeEventListener('blur', this.onblurOuter);
             targetElm.removeEventListener('click', this.onclickOuter);
             targetElm.removeEventListener('input', this.oninputOuter);

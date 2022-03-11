@@ -1,7 +1,7 @@
 import { FCNoForm } from './NoForm.js';
 export class FCError extends FCNoForm {
     set reason (message) {
-        const elm = this.form.querySelector('.reason');
+        const elm = this.querySelector('.reason');
         const messageList = message.split(/[\r\n]+/);
         const ite = messageList.values();
         let data = ite.next();

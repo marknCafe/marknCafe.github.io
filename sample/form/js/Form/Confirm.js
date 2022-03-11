@@ -8,7 +8,7 @@ export class FCConfirm extends FCBase {
     setConfirmValue (key, value) { //setConfirmValue
         const cnKV = `.fccl-${key}.v-${value}`;
         try {
-            const nodeList = this.form.querySelectorAll(cnKV);
+            const nodeList = this.querySelectorAll(cnKV);
             if (nodeList.length > 0) {
                 nodeList.forEach(elm => this.#viewElement(elm) );
                 return;
@@ -16,7 +16,7 @@ export class FCConfirm extends FCBase {
         } catch (e) {
             console.log(e);
         }
-        this.form.querySelectorAll(`.fcc-${key}`).forEach( elm => {
+        this.querySelectorAll(`.fcc-${key}`).forEach( elm => {
             elm.innerHTML = '';
             elm.appendChild(document.createTextNode(value));
             this.#viewElement(elm);
@@ -46,9 +46,9 @@ export class FCConfirm extends FCBase {
         }
     }
     clearConfirmValues () {
-        this.form.querySelectorAll('[class^="fccl-"],[class*=" fccl-"]')
+        this.querySelectorAll('[class^="fccl-"],[class*=" fccl-"]')
                 .forEach( node => this.#hideElement(node) );
-        this.form.querySelectorAll('[class^="fcc-"], [class*=" fcc-"]')
+        this.querySelectorAll('[class^="fcc-"], [class*=" fcc-"]')
                 .forEach( node => node.innerHTML = '' );
     }
 }

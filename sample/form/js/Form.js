@@ -123,7 +123,7 @@ export class Form {
             fc.addEventList('beforeView', this.#genFormBeforeView());
         }
         if (useButtonSetting) {
-            fc.form.querySelectorAll('.back').forEach(elm => {
+            fc.querySelectorAll('.back').forEach(elm => {
                 elm.addEventListener('click', this.#genFormClickBackButton(fc));
             });    
         }
@@ -143,7 +143,7 @@ export class Form {
         const ctr = this.#ctr;
         return fc => {
             if (ctr.isFirst(fc)) {
-                fc.form.querySelectorAll('.back').forEach(elm => {
+                fc.querySelectorAll('.back').forEach(elm => {
                     elm.parentNode.style.display = ctr.isConfirm ? '' : 'none';
                 });
             }
@@ -181,7 +181,7 @@ export class Form {
             fc.addEventList('beforeView', this.#genConfirmBeforeView());
         }
         if (useButtonSetting) {
-            fc.form.querySelectorAll('button.modify').forEach(elm => {
+            fc.querySelectorAll('button.modify').forEach(elm => {
                 elm.addEventListener('click', this.#genConfirmClickModifyButton(elm), false);
             });
         }
