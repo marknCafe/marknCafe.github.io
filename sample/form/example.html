@@ -1,0 +1,77 @@
+<!-- example.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>example</title>
+<script src="js/example.js" type="module"></script>
+<style>
+.hidden { display:none; }
+</style>
+</head>
+<body class="hidden"><!-- スタイルを一切気にしないでコーディングしています。 -->
+
+<div class="form">
+<form method="post" action="#">
+<h2>フォーム</h2>
+<div>
+    <div><label for="i_username">ユーザー名</label></div>
+    <div><input type="text" name="username" id="i_username" minlength="5" maxlength="15" pattern="^\w+$" required></div>
+    <div class="warning username"></div><!-- ここに有効性検査結果が表示されます。 -->
+</div>
+<div>
+    <div class="vmfor-hobby">趣味</div><!-- vmfor-[name] でエラーメッセージに名称を追加できます。 -->
+    <ul>
+        <li><label><input type="checkbox" name="hobby" value="1" class="required">買い物</label></li>
+        <!-- class="required"で同じname属性のcheckboxを全て必須項目として扱います。 -->
+        <li><label><input type="checkbox" name="hobby" value="2">映画</label></li>
+        <li>
+            <label><input type="checkbox" name="hobby" value="3">その他</label> 
+            <label>その他の内容<input type="text" name="hobby-etc" maxlength="15">
+        </li>
+    </ul>
+    <div class="warning"><span class="hobby"></span><span class="hobby-etc"></span></div>
+    <!-- class="warning"に内包された要素のclass属性にnameをつけても各要素にエラーメッセージが表示されます。 -->
+</div>
+<ul>
+    <li><button type="button" class="back">戻る</button></li><!-- 修正画面のときに表示します。 -->
+    <li><button type="submit">次の画面へ</button></li>
+</ul>
+</form>
+</div><!-- /.page.form -->
+
+<div class="confirm">
+<form method="post" action="#">
+<h2>確認画面</h2>
+<div>
+    <div>ユーザー名</div>
+    <div class="fcc-username"></div><!-- fcc-[name]で取得した値を挿入します。 -->
+</div>
+<div>
+    <div>趣味</div>
+    <ul>
+        <li class="fccl-hobby v-1">買い物</li><!-- fccl-[name] v-[value]で取得した値と合致する要素を表示します。 -->
+        <li class="fccl-hobby v-2">映画</li>
+        <li class="fccl-hobby v-3">その他 (<span class="fcc-hobby-etc"></span>)</li>
+    </ul>
+</div>
+<ul>
+    <li><button type="button" class="modify form">修正する</button></li><!-- class="modify [画面名]" で各画面に戻ります。 -->
+    <li><button type="submit">登録する</button></li>
+</ul>
+    <input type="hidden" name="hiddenval" value="隠れた値">
+</form>
+</div><!-- /.page.confirm -->
+
+<div class="complete">
+<h2>登録完了</h2>
+<p>登録完了しました</p>
+</div><!-- /.page.completed -->
+
+<div class="error">
+<h2>エラー</h2>
+<p class="reason"></p> <!-- 「セッションタイムアウト」等の簡単なメッセージを表示します。 -->
+</div><!-- /.page.completed -->
+
+</body>
+</html>
