@@ -23,6 +23,7 @@ export class Form {
     static get #defaultExpires () { return -1; }
     static get #defaultUseWarnElm () { return true; }
     static get #defaultDelayTime () { return 1500; }
+    static get #defaultMarginMaxLength () { return 5; }
     static get #defaultPromiseTimeout () { return 30; }
     static get #defaultEnableSubmit () { return false; }
     static #defaultValidityMessage = new ValidityMessage();
@@ -33,6 +34,7 @@ export class Form {
 
     #useWarnElm = Form.#defaultUseWarnElm;
     #delayTime = Form.#defaultDelayTime;
+    #marginMaxLength = Form.#defaultMarginMaxLength;
     #validityMessage = Form.#defaultValidityMessage;
     #promiseTimeout = Form.#defaultPromiseTimeout;
     #formEnableSubmit = Form.#defaultEnableSubmit;
@@ -56,14 +58,17 @@ export class Form {
         this.#ctr.onExpires = onExpires;
         return this;
     }
-    formSettings ({useWarnElm = Form.#defaultUseWarnElm, delayTime = Form.#defaultDelayTime, validityMessage = Form.#defaultValidityMessage,
+    formSettings ({useWarnElm = Form.#defaultUseWarnElm, delayTime = Form.#defaultDelayTime,
+                    marginMaxLength = 5, validityMessage = Form.#defaultValidityMessage,
                     promiseTimeout = Form.#defaultPromiseTimeout, enableSubmit = Form.#defaultEnableSubmit, afterSubmit = Form.#defaultFormAfterSubmit} = {}) {
         if (Number.isInteger(delayTime) == false) { throw new TypeError('formSettings (delayTime)'); }
+        if (Number.isInteger(marginMaxLength) == false || marginMaxLength < 0) { throw new TypeError('formSettings (marginMaxLength)'); }
         if (validityMessage instanceof ValidityMessage == false) { throw new TypeError('formSettings (validityMessage)'); }
         if (Number.isInteger(promiseTimeout) == false) { throw new TypeError('formSettings (promiseTimeout)'); }
         if (afterSubmit instanceof Function == false) { throw new TypeError('formSettings (afterSubmit)'); }
         this.#useWarnElm = useWarnElm ? true : false;
         this.#delayTime = delayTime;
+        this.#marginMaxLength = marginMaxLength;
         this.#validityMessage = validityMessage;
         this.#promiseTimeout = promiseTimeout;
         this.#formEnableSubmit = enableSubmit ? true : false;
@@ -109,6 +114,7 @@ export class Form {
         fc.enableSubmit = this.#formEnableSubmit;
         fc.useWarnElm = this.#useWarnElm;
         fc.delayTime = this.#delayTime;
+        fc.marginMaxLength = this.#marginMaxLength;
         fc.validityMessage = this.#validityMessage;
         fc.promiseTimeout = this.#promiseTimeout;
         const cmp = this.#formAfterSubmit === Form.#defaultFormAfterSubmit;

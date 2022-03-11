@@ -11,7 +11,8 @@ form.controllerSettings({
     delayTime : 1000,
     promiseTimeout : 2,
     enableSubmit : false,
-    validityMessage : new VMType.Jp()
+    validityMessage : new VMType.Jp(),
+    marginMaxLength : 3
 })
 
 .append('agreement', FCType.Form, 'div.form.agreement') // 同意画面
