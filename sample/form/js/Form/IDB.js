@@ -105,7 +105,7 @@ export class IDB {
     }
 
     delete () {
-        this.#db.close();
+        if (this.hasDb) this.#db.close();
         const req = indexedDB.deleteDatabase(this.#dbName);
         return this.#genPromise(req);
     }

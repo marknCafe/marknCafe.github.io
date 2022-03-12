@@ -1,4 +1,5 @@
-import { FCBase, FCEventHandlerList, FCNotExistsExeption, FCFailedOpenIDBExeption } from './Base.js';
+import { FCBase, FCEventHandlerList, FCTimer, FCTimerState } from './Base.js';
+import { FCNotExistsExeption, FCFailedOpenIDBExeption } from './Exeption.js';
 import { FCForm } from './FCForm.js';
 import { FCConfirm } from './Confirm.js';
 import { FCError } from './Error.js';
@@ -26,13 +27,12 @@ export class FCController {
     #active = FCController.#NotActive;
     #expires = 0;
     #onExpires = FCController.#DefaultOnExpires;
-    #stoID = undefined;
+    #timer = new FCTimer(() => {}, 0);
 
     #idb = undefined;
     #useIdb = true;
 
     #cbfUploadDb = undefined;
-    #siID = undefined;
 
     constructor (name, useIdb = true) {
         if (!name) { throw new TypeError('"name" is not defined.'); }
@@ -47,7 +47,8 @@ export class FCController {
         this.#fcCol = new Map();
         this.#data = new Map ();
         this.#useIdb = useIdb;
-        if (useIdb) { this.#idbSetting(); }
+        this.#idbSetting();
+        this.#addEventFocus();
     }
     append(key, type, parentNode, noStat) {
         if (key.length == 0 || this.#fcCol.has(key)) {
@@ -174,39 +175,39 @@ export class FCController {
     get isConfirm () {
         return sessionStorage.getItem(this.#keyIsConfirm) == '1' ? true : false;
     }
-    #genPromiseLoadFormDatas (key) {
+    async #LoadFormDatas (key) {
         if (FCController.#D) console.log(`genPrLoadFormData, key: ${key}`);
-        return new Promise( (resolve, reject) =>{
-            if (FCController.#D) console.log(`exec Promise, key: ${key}`);
-            this.#idb.get(key)
-            .then(([req, ]) => {
-                const fc = this.#fcCol.get(key);
-                if (req.result != undefined) {
-                    fc.clearValues();
-                    fc.setValues(req.result.formData);
-                    if (FCController.#D) console.log(`success! ${key}`);
-                }
-                const data = fc.getCollectedFormData();
-                this.#data.set(key, data);
-                resolve(req);
-            })
-            .catch(() => { reject(req); });
-        } );
+        try {
+            const [req, ] = await this.#idb.get(key);
+            const fc = this.#fcCol.get(key);
+            if (req.result != undefined) {
+                fc.clearValues();
+                fc.setValues(req.result.formData);
+                if (FCController.#D) console.log(`success! ${key}`);
+            }
+            const data = fc.getCollectedFormData();
+            this.#data.set(key, data);
+            return req;
+        } catch (data) {
+            const [req, ] = data;
+            throw req.error;
+        }
     }
-
     async start () {
         if (this.#useIdb == false) {
             return this.#startNoUseIdb();
         }
         try {
+            this.#initExpires();
+            this.#checkExpires();
+
             const idbReq = await this.#idb.open();
             const promises = [];
             this.#fcCol.forEach((fc, key) => {
-                promises.push(this.#genPromiseLoadFormDatas(key));
+                promises.push(this.#LoadFormDatas(key));
             });
             await Promise.allSettled(promises);
-            this.#initExpires();
-            this.#checkExpires();
+
             this.hideAll();
             this.#firstView();
             this.#addIDBEvent();
@@ -252,15 +253,10 @@ export class FCController {
 
         this.clearValues();
         sessionStorage.clear();
-        if (this.#useIdb == false) { return; }
-        if (this.#idb.hasDb) {
-            this.#idb.db.close();
-            this.#idb.delete();
-        }
+        this.#idb.delete();
         removeEventListener('beforeunload', this.#cbfUploadDb);
-        clearInterval(this.#siID);
         this.#cbfUploadDb = undefined;
-        clearTimeout(this.#stoID);
+        this.#timer.clear();
     }
     #isExpires () {
         const expires = sessionStorage.getItem(this.#keyExpires);
@@ -290,22 +286,21 @@ export class FCController {
         }
     }
     #setTimerExpires () {
-        const timeout = Number(sessionStorage.getItem(this.#keyExpires)) - Number(new Date());
-        if (this.#stoID != undefined) {
-            clearTimeout(this.#stoID);
-            this.#stoID == undefined;
+        if (this.#timer.state > FCTimerState.standby) {
+            this.#timer.clear();
         }
-        const ctr = this;
-        this.#stoID = setTimeout(() => {
-            clearTimeout(this.#stoID);
-            this.#stoID == undefined;
+        const delay = Number(sessionStorage.getItem(this.#keyExpires)) - Number(new Date());
+        this.#timer = new FCTimer(() => {
             this.#clear();
-            ctr.#onExpires(ctr);
-        }, timeout);
+            this.#onExpires(this);
+        }, delay);
+        this.#timer.start();
+    }
+    #addEventFocus () {
         addEventListener('focus', event => {
             if (this.#isExpires() == false) { return; }
             this.#clear();
-            ctr.#onExpires(ctr);
+            this.#onExpires(this);
         }, false);
     }
     clearValues () {
