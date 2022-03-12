@@ -1,3 +1,4 @@
+/* Form.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import {
     FCController, FCBase, FCForm, FCConfirm, FCNoForm, FCError, FCEventHandlerList
 } from './Form/Controller.js';

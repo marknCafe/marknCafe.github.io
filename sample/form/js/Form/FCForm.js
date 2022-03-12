@@ -1,4 +1,5 @@
 import { FCBase, FCNotExistsExeption, FCTimer, FCPromiseTimer } from './Base.js';
+/* Form/FCForm.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import { ValidityMessage, VMResult, VMSError, VMSCustomError } from './ValidityMessage.js';
 export class FCForm extends FCBase {
 /* フォーム画面を管理するためのクラス。

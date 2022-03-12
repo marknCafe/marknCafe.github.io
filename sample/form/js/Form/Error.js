@@ -1,3 +1,4 @@
+/* Form/Error.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import { FCNoForm } from './NoForm.js';
 export class FCError extends FCNoForm {
     set reason (message) {

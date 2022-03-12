@@ -1,3 +1,4 @@
+/* Form/NoForm.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import {FCBase} from './Base.js';
 export class FCNoForm extends FCBase {
     constructor (elm) {

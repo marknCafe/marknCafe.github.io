@@ -1,3 +1,4 @@
+/* Form/IDB.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 export class IDB {
     static #D = false;
     static #DefStoreSettings = db => {};

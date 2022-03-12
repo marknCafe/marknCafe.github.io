@@ -1,3 +1,4 @@
+/* Form/Base.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import { FCNotExistsExeption, FCFailedOpenIDBExeption } from './Exeption.js';
 import { FCTimer, FCPromiseTimer, FCTimerState } from './Utility.js';
 export { FCNotExistsExeption, FCFailedOpenIDBExeption, FCTimer, FCPromiseTimer, FCTimerState };

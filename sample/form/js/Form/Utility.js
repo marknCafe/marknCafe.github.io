@@ -1,3 +1,4 @@
+/* Form/Utility.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 export class FCTimer {
     #id = undefined;
     #cbFn = undefined;

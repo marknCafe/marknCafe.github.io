@@ -1,3 +1,4 @@
+/* Form/Confirm.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import {FCBase} from './Base.js';
 export class FCConfirm extends FCBase {
 /* フォームの確認画面を管理するためのクラス。 */

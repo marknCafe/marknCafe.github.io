@@ -1,3 +1,4 @@
+/* Form/Controller.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 import { FCBase, FCEventHandlerList, FCTimer, FCTimerState } from './Base.js';
 import { FCNotExistsExeption, FCFailedOpenIDBExeption } from './Exeption.js';
 import { FCForm } from './FCForm.js';

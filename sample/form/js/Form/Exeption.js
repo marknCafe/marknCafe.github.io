@@ -1,3 +1,4 @@
+/* Form/Exeption.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
 export class FCExeption extends Error {
 /* form.js内で使用する拡張Errorクラスのベースクラス。 */
     constructor (baseMessage, hint) {
