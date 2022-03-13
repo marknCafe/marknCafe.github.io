@@ -146,6 +146,7 @@ export class FCController {
         if (this.#expires <= 0) { return; }
         const strExpires = sessionStorage.getItem(this.#keyExpires);
         if (strExpires == '' || strExpires == 0 || strExpires == null) {
+            this.#clearStrage();
             sessionStorage.setItem(this.#keyExpires, Number(new Date()) + (this.#expires * 1000));
         }
         if (this.#onExpires !== FCController.#DefaultOnExpires) {
@@ -253,11 +254,14 @@ export class FCController {
         }
 
         this.clearValues();
+        this.#timer.clear();
+        this.#clearStrage();
+    }
+    #clearStrage () {
         sessionStorage.clear();
         this.#idb.delete();
         removeEventListener('beforeunload', this.#cbfUploadDb);
         this.#cbfUploadDb = undefined;
-        this.#timer.clear();
     }
     #isExpires () {
         const expires = sessionStorage.getItem(this.#keyExpires);
