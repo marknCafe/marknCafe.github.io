@@ -81,23 +81,23 @@
 
 <div class="item">
 <span class="name"><label for="i_lastname">姓</label><span class="s-required">[必須]</span></span>
-<span class="input"><input type="text" id="i_lastname" name="lastname" maxlength="10" required></span>
+<span class="input"><input type="text" id="i_lastname" name="lastname" maxlength="10" placeholder="e.g.) 山田" required></span>
 <span class="warning lastname"></span>
 </div>
 <div class="item">
 <span class="name"><label for="i_firstname">名</label><span class="s-required">[必須]</span></span>
-<span class="input"><input type="text" id="i_firstname" name="firstname" maxlength="10" required></span>
+<span class="input"><input type="text" id="i_firstname" name="firstname" maxlength="10" placeholder="e.g.) 花子" required></span>
 <span class="warning firstname"></span>
 </div>
 
 <div class="item">
 <span class="name"><label for="i_kanalname">姓（カナ）</label><span class="s-required">[必須]</span></span>
-<span class="input"><input type="text" id="i_kanalname" name="kanalname" class="cfr-htk vmt-katakana" maxlength="10" pattern="^[\p{sc=Kana}\p{sc=Hira}\u{30FC}\u{FF70}]+$" required></span>
+<span class="input"><input type="text" id="i_kanalname" name="kanalname" class="cfr-htk vmt-katakana" maxlength="10" pattern="^[\p{sc=Kana}\p{sc=Hira}\u{30FC}\u{FF70}]+$" placeholder="e.g.) ヤマダ" required></span>
 <span class="warning kanalname"></span>
 </div>
 <div class="item">
 <span class="name"><label for="i_kanafname">名（カナ）</label><span class="s-required">[必須]</span></span>
-<span class="input"><input type="text" id="i_kanafname" name="kanafname" class="cfr-htk vmt-katakana" maxlength="10" pattern="^[\p{sc=Kana}\p{sc=Hira}\u{30FC}\u{FF70}]+$" required></span>
+<span class="input"><input type="text" id="i_kanafname" name="kanafname" class="cfr-htk vmt-katakana" maxlength="10" pattern="^[\p{sc=Kana}\p{sc=Hira}\u{30FC}\u{FF70}]+$" placeholder="e.g.) ハナコ" required></span>
 <span class="warning kanafname"></span>
 </div>
 
@@ -171,7 +171,7 @@
 
 <div class="item">
 <span class="name"><label for="i_phone">電話番号</label><span class="s-required">[必須]</span></span>
-<span class="input"><input type="tel" id="i_phone" name="phone" class="cfr-wth" minlength="10" maxlength="11" pattern="^[0０](?:[1-9１-９][0０][0-9０-９]{8}|[1-9１-９]{2}[0-9０-９]{7})$" required></span>
+<span class="input"><input type="tel" id="i_phone" name="phone" class="cfr-wth" minlength="10" maxlength="11" pattern="^[0０](?:[1-9１-９][0０][0-9０-９]{8}|[1-9１-９]{2}[0-9０-９]{7})$"　placeholder="e.g.) 09012345678" required></span>
 <span class="warning phone"></span>
 </div>
 
@@ -186,7 +186,7 @@
 
 <div class="item">
 <span class="name"><label for="i_email">メールアドレス</label></span>
-<span class="input"><input type="email" id="i_email" name="email" maxlength="255"></span>
+<span class="input"><input type="email" id="i_email" name="email" maxlength="255" placeholder="e.g.) example@example.com"></span>
 <span class="warning email"></span>
 </div>
 
