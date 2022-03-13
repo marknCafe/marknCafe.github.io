@@ -207,7 +207,7 @@ export class VMResult {
     get reason () { return this.#reason; }
 
     get isInvalid () {
-        const check = (this.#reason != undefined || this.#message instanceof VMSError);
+        const check = this.#reason instanceof VMSError;
         return check;
     }
     get isValid () { return !this.isInvalid; }

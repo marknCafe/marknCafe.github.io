@@ -178,7 +178,10 @@ export class FCForm extends FCBase {
     static #genCbfunc () {
         return (event, fc) => {
             if (FCForm.#D) { console.log(`${event.type} : ${event.currentTarget.name}`); }
-            fc.validation(event.currentTarget, false, event)
+            const pr = fc.validation(event.currentTarget, false, event);
+            const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], event.type);
+            timer.start();
+            pr.then(() => { timer.clear(); })
             .catch(result => fc.#cbfCatchValidPromise(result, `${event.type}Event`) );
         };
     }
@@ -194,8 +197,11 @@ export class FCForm extends FCBase {
             }
             timer = new FCTimer(() => {
                 timer = undefined;
-                fc.validation(elm, false, event)
-                .then(result => {
+                const pr = fc.validation(elm, false, event);
+                const pTimer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], event.type);
+                pTimer.start();
+                pr.then(result => {
+                    pTimer.clear();
                     if (elm.classList.contains('notrim')) { return; }
                     const regexSpace = /(?:^\s+|\s+$)/;
                     if (regexSpace.test(elm.value)) {
@@ -247,11 +253,35 @@ export class FCForm extends FCBase {
         if (fc.#useWarnElm) {
             return fc.validationAll(event);
         } else {
-            const elms = fc.values();
-            const execP = fc.#genCbFuncVld(elms, event);
-            return execP(elms.next());
+            return fc.#validationStopFindInvalid(event);
         }
     }
+    async #validationStopFindInvalid (event) {
+        const promises = [];
+        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, promises, 'validationStopFindInvalid');
+        timer.start();
+        let isValid = true;
+        try {
+            for (let elm of this.values()) {
+                const result = await this.#genPromiseVSFI(elm, event, promises);
+                if (result.isInvalid) {
+                    isValid = false;
+                    break;
+                }
+            }
+            timer.clear();
+            return isValid;
+        } catch (reason) {
+            timer.clear();
+            throw reason;
+        }
+    }
+    #genPromiseVSFI (elm, event, promises) {
+        const pr = this.validation(elm, false, event);
+        promises.push(pr);
+        return pr;
+    }
+
     #genCbFuncVld (elms, event) {
         const fc = this;
         const resArray = [];
@@ -259,7 +289,7 @@ export class FCForm extends FCBase {
             if (iteData.done) { return true; }
             try {
                 const result = await fc.validation(iteData.value, false, event);
-                if (result.value.isInvalid) {
+                if (result.isInvalid) {
                     if (FCForm.#D) { console.log(resArray); }
                     return false;
                 }
@@ -275,7 +305,11 @@ export class FCForm extends FCBase {
 
     testElm (elm, event) {
         const fc = this;
-        return fc.validation(elm, true, event);
+        const pr = fc.validation(elm, true, event);
+        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], 'testElm');
+        timer.start();
+        pr.then(() => { timer.clear(); });
+        return pr;
     }
 
     test (event) {
@@ -313,14 +347,13 @@ export class FCForm extends FCBase {
             return this.#taskValidation.get(elm.name);
         }
 
-        if ((this.#noUseMessage || noUseMessage) == false) {
-            this.#setMessage(elm, '');
-        }
-
         if (elm.name in this.#forcedValidation) {
             this.#forcedValidation[elm.name]
             .forEach(key => {
-                this.validation(this.querySelector(`[name=${key}]`), noUseMessage, event)
+                const pr = this.validation(this.querySelector(`[name=${key}]`), noUseMessage, event);
+                const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], 'forcedValidation');
+                timer.start();
+                pr.then(() => { timer.clear(); })
                 .catch(result => this.#cbfCatchValidPromise(result, 'forcedValidation') );
             });
         }
@@ -334,7 +367,7 @@ export class FCForm extends FCBase {
         try {
             const result = await this.#getCustomMessage(elm, event);
             if ((this.#noUseMessage || noUseMessage) == false) {
-                this.#setMessage(elm, result.message);
+                this.#setMessage(elm, result);
             }
             this.#taskValidation.set(elm.name, null);
             return result;
@@ -384,32 +417,34 @@ export class FCForm extends FCBase {
         }
     }
 
-    #setMessage (elm, message) {
-        const elmWarning = this.#getElmWarnig(elm);
-        const clElmWarning = elmWarning.classList;
-        const clElm = elm.classList;
-        clElmWarning.remove('invalid', 'valid');
-        clElm.remove('invalid', 'valid');
-        const isInvalid = message != null;
+    #setMessage (elm, result) {
+        const isInvalid = result.isInvalid;
+        const className = isInvalid ? 'invalid' : 'valid';
+
+        const classList = elm.classList;
+        classList.remove('invalid', 'valid');
+        classList.add(className);
+
+        if (FCBase.regexTypeCR.test(elm.type)) {
+            elm.form.querySelectorAll(`[name=${elm.name}]`).forEach(elm => {
+                const parentClassList = elm.parentNode.classList;
+                parentClassList.remove('invalid', 'valid');
+                parentClassList.add(className);    
+            });
+        }
+
         if (this.#useWarnElm) {
+            const elmWarning = this.#getElmWarnig(elm);
+            const clElmWarning = elmWarning.classList;
+            clElmWarning.remove('invalid', 'valid');
+            clElmWarning.add(className);
             elmWarning.innerHTML = '';
+
             if (isInvalid) {
-                clElmWarning.add('invalid');
-                clElm.add('invalid');
-                elmWarning.appendChild(document.createTextNode(message));
-            } else {
-                clElmWarning.add('valid');
-                clElm.add('valid');
-            }
-            if (FCBase.regexTypeCR.test(elm.type)) {
-                elm.form.querySelectorAll(`[name=${elm.name}]`).forEach(elm => {
-                    const parentClassList = elm.parentNode.classList;
-                    parentClassList.remove('invalid', 'valid');
-                    parentClassList.add(isInvalid ? 'invalid' : 'valid');    
-                });
+                elmWarning.appendChild(document.createTextNode(result.message));
             }
         } else if (isInvalid) {
-            elm.setCustomValidity(message);
+            elm.setCustomValidity(result.message);
             elm.reportValidity();
         }
     }
