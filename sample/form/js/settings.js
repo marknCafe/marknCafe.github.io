@@ -1,4 +1,4 @@
-import { Form, FCType, VMType, FCUtil } from './Form.js';
+import { Form, FCType, VMType, FCUtil, FCData } from './Form.js';
 removeEventListener('load', onLoadUnavailable); // 非対応ブラウザ用のイベントリスナを削除
 
 const form = new Form('form1');
@@ -74,6 +74,13 @@ form.controllerSettings({
         timer.start([elm, myFc, resolve, reject]);
     };
     fc.addExtValidPromExec('postcode', cbFn, 'そんなラッキーな番号なはずがない！', ['submit']);
+
+    const pref = fc.querySelector('select[name=prefecture]');
+    FCData.prefectureJP().forEach((value, key) => {
+        const option = pref.appendChild(document.createElement('option'));
+        option.text = value;
+        option.value = key;
+    });
 })
 
 .confirmSettings({
@@ -91,6 +98,12 @@ form.controllerSettings({
     if (hidden.value == '') {
         location.href = location.href;
     }
+    const pref = fc.querySelector('.value.prefecture');
+    FCData.prefectureJP().forEach((value, key) => {
+        const li = pref.appendChild(document.createElement('li'));
+        li.classList.add('fccl-prefecture', `v-${key}`);
+        li.appendChild(document.createTextNode(value));
+    });
 })
 
 .start()
