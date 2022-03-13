@@ -10,7 +10,6 @@ export  {
     FCBase, FCForm, FCConfirm, FCError, FCNoForm, FCEventHandlerList, FCNotExistsExeption, FCFailedOpenIDBExeption
 };
 export class FCController {
-    static #D = false;
     static #nameList = {};
     static #NotActive = () => {
         const elm = document.createElement('div');
@@ -120,7 +119,6 @@ export class FCController {
             formData : this.#genSimpleObj(fc.getCollectedFormData())
         });
         pr.catch(([req, ]) => { throw req.error; });
-        if (FCController.#D) { pr.then(() => { console.log('setData(db) success'); }); }
     }
     getData (key) {
         if (this.#data.has(key) == false) { throw new FCNotExistsExeption(`getData, key: ${key}`); }
@@ -140,13 +138,12 @@ export class FCController {
         if (Number.isInteger(sec) == false) { throw new TypeError('expires'); }
         if (sec < 0) { sec = -1; }
         this.#expires = sec;
-        this.#initExpires();
     }
-    #initExpires () {
+    #initExpires (clearStrage = false) {
         if (this.#expires <= 0) { return; }
         const strExpires = sessionStorage.getItem(this.#keyExpires);
         if (strExpires == '' || strExpires == 0 || strExpires == null) {
-            this.#clearStrage();
+            if (clearStrage) { this.#clearStrage(); }
             sessionStorage.setItem(this.#keyExpires, Number(new Date()) + (this.#expires * 1000));
         }
         if (this.#onExpires !== FCController.#DefaultOnExpires) {
@@ -178,14 +175,12 @@ export class FCController {
         return sessionStorage.getItem(this.#keyIsConfirm) == '1' ? true : false;
     }
     async #LoadFormDatas (key) {
-        if (FCController.#D) console.log(`genPrLoadFormData, key: ${key}`);
         try {
             const [req, ] = await this.#idb.get(key);
             const fc = this.#fcCol.get(key);
             if (req.result != undefined) {
                 fc.clearValues();
                 fc.setValues(req.result.formData);
-                if (FCController.#D) console.log(`success! ${key}`);
             }
             const data = fc.getCollectedFormData();
             this.#data.set(key, data);
@@ -197,10 +192,10 @@ export class FCController {
     }
     async start () {
         if (this.#useIdb == false) {
-            return this.#startNoUseIdb();
+            return this.#startNotUseIdb();
         }
         try {
-            this.#initExpires();
+            this.#initExpires(true);
             this.#checkExpires();
 
             const idbReq = await this.#idb.open();
@@ -229,10 +224,10 @@ export class FCController {
             }
         }
     }
-    async #startNoUseIdb () {
+    async #startNotUseIdb () {
         try {
             this.#fcCol.forEach((fc, key) => this.setData(key) );
-            this.#initExpires();
+            this.#initExpires(true);
             this.#checkExpires();
             this.hideAll();
             this.#firstView();
@@ -248,11 +243,6 @@ export class FCController {
         catch (e) { console.error(e); }
     }
     #clear () {
-        if (FCController.#D) {
-            console.log('#clear');
-            console.trace();
-        }
-
         this.clearValues();
         this.#timer.clear();
         this.#clearStrage();
@@ -335,7 +325,6 @@ export class FCController {
                 formData : this.#genSimpleObj(data)
             });
             pr.catch(([req, ]) => { console.error(req.error); });
-            if (FCController.#D) pr.then(() => { onsole.log('success updateDB'); });
         });
     }
     #addIDBEvent () {
