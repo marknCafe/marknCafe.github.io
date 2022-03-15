@@ -44,6 +44,10 @@ export class Form {
     #confirmOnSubmit = Form.#defaultConfirmOnSubmit;
 
     #isSetEvent = false;
+    #isInitError = false;
+    #reasonInitError = new ErrorEvent('dummy');
+    #appendFinished = false;
+
     constructor (name, useIdb = true) {
         this.#ctr = new FCController(name, useIdb);
         this.#appendList = Array();
@@ -51,6 +55,9 @@ export class Form {
         this.controllerSettings();
     }
     get controller () { return this.#ctr; }
+
+    get isInitError () { return this.#isInitError; }
+    get appendFinished () { return this.#appendFinished; }
 
     controllerSettings ({expires = Form.#defaultExpires, onExpires = Form.#defaultOnExpires} = {}) {
         if (Number.isInteger(expires) == false) { throw new TypeError('controllerSettings (expires)'); }
@@ -99,8 +106,19 @@ export class Form {
         const appendList = this.#appendList;
         const initList = this.#initList;
         addEventListener('load', () => {
-            appendList.forEach(option => fm.#fcBaseSettings(option));
-            initList.forEach(cbFn => cbFn(fm.#ctr));
+            for (let option of appendList) {
+                if (fm.#isInitError) return;
+                fm.#fcBaseSettings(option);
+            }
+            this.#appendFinished = true;
+            for (let cbFn of initList) {
+                if (fm.#isInitError) return;
+                cbFn(fm.#ctr);
+            }
+        }, false);
+        addEventListener('error', (event) => {
+            fm.#reasonInitError = event;
+            fm.#isInitError = true;
         }, false);
     }
     #fcBaseSettings (option) {
@@ -149,7 +167,6 @@ export class Form {
                 });
             }
             if (ctr.isConfirm == false) { return; }
-            //fc.test()
             fc.validationAll()
             .then(data => {
                 if (Form.#D) console.dir(data);
@@ -213,9 +230,14 @@ export class Form {
         };
     }
     start () {
+        const fm = this;
         const ctr = this.#ctr;
         return new Promise((resolve, reject) => {
             addEventListener('load', () => {
+                if (fm.#isInitError) {
+                    reject(fm.#reasonInitError.error);
+                    return;
+                }
                 ctr.start()
                 .then(idbReq => resolve(idbReq))
                 .catch(reason => reject(reason));

@@ -1,5 +1,5 @@
-import { FCBase, FCNotExistsExeption, FCTimer, FCPromiseTimer } from './Base.js';
 /* Form/FCForm.js | (c) marknCafe | https://github.com/marknCafe/Form/blob/main/LICENSE */
+import { FCBase, FCNotExistsExeption, FCTimer, FCPromiseTimer } from './Base.js';
 import { ValidityMessage, VMResult, VMSError, VMSCustomError } from './ValidityMessage.js';
 export class FCForm extends FCBase {
 /* フォーム画面を管理するためのクラス。
@@ -118,8 +118,11 @@ export class FCForm extends FCBase {
     addForcedValidation (baseKey, targetKey) {
         if (this.has(baseKey) == false) { throw new FCNotExistsExeption('addForcedValidation, baseKey'); }
         if (this.has(targetKey) == false) { throw new FCNotExistsExeption('addForcedValidation, targetKey'); }
+        if (targetKey in this.#forcedValidation && this.#forcedValidation[targetKey].indexOf(baseKey) > -1) {
+            throw new TypeError('It has already been registered in the reverse combination.');
+        }
         if (baseKey in this.#forcedValidation) {
-            if (this.#forcedValidation[baseKey].find(targetKey) == undefined) {
+            if (this.#forcedValidation[baseKey].indexOf(targetKey) == -1) {
                 this.#forcedValidation[baseKey].push(targetKey);
             }
         } else {

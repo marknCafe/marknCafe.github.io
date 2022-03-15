@@ -56,7 +56,7 @@ export class IDB {
         return new Promise((resolve, reject) => {
             const req = indexedDB.open(this.#dbName, this.#version);
             req.addEventListener('error', event => {
-                reject(idbReq);
+                reject(req);
             });
             req.addEventListener('upgradeneeded', event => {
                 this.#storeSettings(req.result);
