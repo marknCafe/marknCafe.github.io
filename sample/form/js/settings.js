@@ -49,8 +49,8 @@ form.controllerSettings({
         elm.classList.remove('hide');
         if (FnCond() == false) elm.classList.add('hide');
     };
-    fc.addCondRequireOr(['q3', 'q4'], [['q1', 1], ['q2', 2]], '質問１、２の回答により必須です。', {cbFnDisabled : cbFnDisabled});
-    fc.addCondRequireAnd(['q7', 'q8'], [['q5', 1], ['q6', 2]], '質問５、６の回答により必須です。', {cbFnDisabled : cbFnDisabled});
+    fc.addCondRequireOr(['q3', 'q4'], [['q1', 1], ['q2', 2]], '質問１を「はい」、または質問２を「いいえ」と回答された方は必須です。', {cbFnDisabled : cbFnDisabled});
+    fc.addCondRequireAnd(['q7', 'q8'], [['q5', 1], ['q6', 2]], '質問５を「はい」、かつ質問６を「いいえ」と回答された方は必須です。', {cbFnDisabled : cbFnDisabled});
 })
 .addInitTask(ctr => {
     const fc = ctr.get('userinfo');
