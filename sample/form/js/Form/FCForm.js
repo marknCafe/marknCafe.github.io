@@ -130,47 +130,81 @@ export class FCForm extends FCBase {
         }
     }
 
-    addCondRequire (baseKey, targetKey, condVal, message, noUseDisabled = false, eventType = []) {
+    addCondRequire (baseKey, targetKey, condVal, message = '',
+    {useDisabled = true, eventType = [], cbFnDisabled = (cbFnCond, elm) => {}} = {}) {
         if (this.has(baseKey) == false) { throw new FCNotExistsExeption('addCondRequire, baseKey'); }
         if (this.has(targetKey) == false) { throw new FCNotExistsExeption('addCondRequire, targetKey'); }
         if ((condVal instanceof Object) == false && this.querySelectorAll(`[name="${targetKey}"][value="${condVal}"]`).length == 0) {
             console.log(new FCNotExistsExeption(`addCondRequire, settings: base=${baseKey}, target=${targetKey}, value=${condVal}`));
         }
 
-        this.addExtValidation(baseKey, async (elm, fc) => {
-            if (FCForm.#D) { console.log(`key:${baseKey}, isequal`); }
-            if (fc.isEqual(targetKey, condVal) == false) {
-                return true;
-            }
-            return (this.isEmpty(elm.name) == true) ? 'CondRequire' : true;
-        }, message, eventType);
-
+        const cbFnCond = () => this.isMatch(targetKey, condVal);
+        const cbFnCondRequire = this.#genCBFnCondRequire(cbFnCond, 'CondRequire');
+        this.addExtValidation(baseKey, cbFnCondRequire, message, eventType);
         this.addForcedValidation(targetKey, baseKey);
 
-        if (noUseDisabled) { return; }
+        if (useDisabled == false) { return; }
 
-        const baseElms = this.querySelectorAll(`[name="${baseKey}"]`);
+        const cbFnInput = this.#genCBFnInputDisabled(baseKey, cbFnCond, cbFnDisabled);
         const targetElms = this.querySelectorAll(`[name="${targetKey}"]`);
-        const fc = this;
-        const cbfInput = event => {
-            if (fc.isEqual(targetKey, condVal)) {
+        targetElms.forEach(elm => elm.addEventListener('input', cbFnInput, false));
+        this.addEventList('beforeView', fc => cbFnInput());
+    }
+    #genCBFnCondRequire (cbFnCond, errLabel) {
+        return async (elm) => {
+            if (cbFnCond()) {
+                return (this.isEmpty(elm.name) == true) ? errLabel : true;
+            }
+            return true;
+        };
+    }
+    #genCBFnInputDisabled (baseKey, cbFnCond, extendFn = (cbFnCond, key) => {}) {
+        return () => {
+            const baseElms = this.querySelectorAll(`[name="${baseKey}"]`);
+            if (cbFnCond()) {
                 baseElms.forEach(elm => elm.disabled = false);
             } else {
                 baseElms.forEach(elm => elm.disabled = true);
-                fc.clearValue(baseKey);
+                this.clearValue(baseKey);
             }
+            extendFn(cbFnCond, baseKey);
         };
-        targetElms.forEach(elm => elm.addEventListener('input', cbfInput, false));
-        fc.addEventList('beforeView', myFc => cbfInput());
+    }
+    addCondRequireOr (baseKeys = [], targetArray = [], message = '',
+    {useDisabled = true, eventType = [], cbFnDisabled = (cbFnCond, key) => {}} = {}) {
+        const cbFnCond = () => targetArray.some(([key, cond]) => this.isMatch(key, cond));
+        this.#addCondRequireMultiple(baseKeys, targetArray, message, useDisabled, eventType, cbFnCond, cbFnDisabled, 'CondRequireOr');
+    }
+    addCondRequireAnd (baseKeys = [], targetArray = [], message = '',
+    {useDisabled = true, eventType = [], cbFnDisabled = (cbFnCond, key) => {}} = {}) {
+        const cbFnCond = () => targetArray.some(([key, cond]) => this.isMatch(key, cond) == false) == false;
+        this.#addCondRequireMultiple(baseKeys, targetArray, message, useDisabled, eventType, cbFnCond, cbFnDisabled, 'CondRequireAnd');
+    }
+    #addCondRequireMultiple (baseKeys, targetArray, message, useDisabled, eventType, cbFnCond, cbFnDisabled, errLabel) {
+        if (baseKeys instanceof Array == false) { throw new TypeError('baseKey'); }
+        if (targetArray instanceof Array == false) { throw new TypeError('target'); }
+        const invalidLayout = targetArray.some(data => data instanceof Array == false || data.length != 2);
+        if (invalidLayout) { throw new TypeError('target'); }
+    
+        const cbFnRequire = this.#genCBFnCondRequire(cbFnCond, errLabel);
+
+        baseKeys.forEach(baseKey => {
+            this.addExtValidation(baseKey, cbFnRequire, message, eventType);
+            targetArray.forEach(([targetKey,]) => this.addForcedValidation(targetKey, baseKey));
+            
+            if (useDisabled == false) { return; }
+
+            const cbFnInput = this.#genCBFnInputDisabled(baseKey, cbFnCond, cbFnDisabled);
+            targetArray.forEach(([targetKey,]) => {
+                const targetElms = this.querySelectorAll(`[name="${targetKey}"]`);
+                targetElms.forEach(elm => elm.addEventListener('input', cbFnInput, false));
+            });
+            this.addEventList('beforeView', fc => cbFnInput());
+        });
     }
 
     #cbfCatchValidPromise (result, label = 'someError') {
-        if (result instanceof VMSError) {
-            if (FCForm.#D) {
-                if (label != '')console.log(label);
-                console.log(result);
-            }
-        } else {
+        if (result instanceof VMSError == false) {
             let error = result;
             if (result instanceof Error == false) {
                 error = new Error(result);
@@ -180,7 +214,6 @@ export class FCForm extends FCBase {
     }
     static #genCbfunc () {
         return (event, fc) => {
-            if (FCForm.#D) { console.log(`${event.type} : ${event.currentTarget.name}`); }
             const pr = fc.validation(event.currentTarget, false, event);
             const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], event.type);
             timer.start();
@@ -192,7 +225,6 @@ export class FCForm extends FCBase {
     static #genCbfuncInput () {
         let timer;
         return (event, fc) => {
-            if (FCForm.#D) { console.log(`${event.type} : ${event.currentTarget.name}`); }
             if (event.key == 'Tab') { return; }
             const elm = event.currentTarget;
             if (timer instanceof FCTimer) {
@@ -220,7 +252,6 @@ export class FCForm extends FCBase {
     static #genCbfuncKeydown () {
         return (event, fc) => {
             const elm = event.currentTarget;
-            if (FCForm.#D) { console.log(`${event.type} : ${elm.name}`); }
             const isSpace = /\s/.test(event.key) == true && elm.value.length == 0;
             if (isSpace || /^enter$/i.test(event.key)) {
                 event.preventDefault();
@@ -239,7 +270,6 @@ export class FCForm extends FCBase {
         if (find == undefined) { return; }
         const key = find.replace('cfr-', '');
         if (FCFReplace.has(key) == false) {
-            if (FCForm.#D) { throw new FCNotExistsExeption('"FCR-key" is not exists.'); }
             return;
         }
         const [regex, cbReplace] = FCFReplace.get(key);
@@ -293,7 +323,6 @@ export class FCForm extends FCBase {
             try {
                 const result = await fc.validation(iteData.value, false, event);
                 if (result.isInvalid) {
-                    if (FCForm.#D) { console.log(resArray); }
                     return false;
                 }
                 resArray.push({status: 'fulfilled', value: result});
@@ -331,7 +360,6 @@ export class FCForm extends FCBase {
         timer.start();
         try {
             const result = await Promise.allSettled(promises);
-            if (FCForm.#D) { console.log(result); }
             timer.clear();
             const errorData = result.find(data => data.status == 'rejected');
             if (errorData) { throw errorData.reason; }
@@ -458,13 +486,13 @@ export class FCForm extends FCBase {
         }
         return elmWarning;
     }
-    isEqual (key, condition) {
+    isMatch (key, condition) {
         let targetVal; // Array
         try { targetVal = this.getValues(key); }
         catch (e) { throw e; }
 
         if (condition instanceof Array) {
-            if (condition.length == 0) { throw TypeError('isEqual'); }
+            if (condition.length == 0) { throw TypeError('isMatch'); }
             if (targetVal.length != condition.length) { return false; }
             return !condition.some(cValue => {
                 return !targetVal.some(tValue => tValue == cValue);

@@ -47,6 +47,11 @@ section p {
 }
 
 .item { padding:.25rem; }
+.item.hide,
+.item.list.hide {
+    display:none;
+}
+
 .name, .input, .value {
     display:block;
     padding:0 .5rem .25rem;
@@ -192,7 +197,6 @@ button.apply {
 button.apply:hover {
     background:rgba(159,51,51,.9);
 }
-
 
 input.w3rem { min-width: 3rem; max-width: 4rem; }
 input.w7rem { width: 7rem; }

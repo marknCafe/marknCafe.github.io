@@ -43,7 +43,14 @@ form.controllerSettings({
 })
 .addInitTask(ctr => {
     const fc = ctr.get('enquate');
-    fc.addCondRequire('etc-hobby', 'hobby', 3, 'その他の内容を入力してください。', true); // 条件付き必須の定義
+    fc.addCondRequire('etc-hobby', 'hobby', 3, 'その他の内容を入力してください。', { useDisabled : false }); // 条件付き必須の定義
+    const cbFnDisabled = (FnCond, key) => {
+        const elm = fc.querySelector(`.item.${key}`);
+        elm.classList.remove('hide');
+        if (FnCond() == false) elm.classList.add('hide');
+    };
+    fc.addCondRequireOr(['q3', 'q4'], [['q1', 1], ['q2', 2]], '質問１、２の回答により必須です。', {cbFnDisabled : cbFnDisabled});
+    fc.addCondRequireAnd(['q7', 'q8'], [['q5', 1], ['q6', 2]], '質問５、６の回答により必須です。', {cbFnDisabled : cbFnDisabled});
 })
 .addInitTask(ctr => {
     const fc = ctr.get('userinfo');
@@ -57,7 +64,7 @@ form.controllerSettings({
 .addInitTask(ctr => {
     const fc = ctr.get('address');
     // 条件付き必須の定義
-    fc.addCondRequire('email', 'newsletter', '1', 'メールマガジンの配信希望された場合は必須です。', false); //メールマガジンを希望した場合、Emailは必須
+    fc.addCondRequire('email', 'newsletter', '1', 'メールマガジンの配信希望された場合は必須です。', { useDisabled : true }); //メールマガジンを希望した場合、Emailは必須
     // 郵便番号の拡張検査（遅延して処理結果を表示する演出をするためにsetTimeoutを利用しています）
     const timer = new FCUtil.Timer((args) => {
         const [elm, myFc, resolve, reject] = args;
