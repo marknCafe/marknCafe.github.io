@@ -511,18 +511,6 @@ export class FCForm extends FCBase {
 
     addItem (elm) {
         super.addItem(elm);
-        this.querySelectorAll(`[name="${elm.name}"]`).forEach(targetElm => {
-            targetElm.removeEventListener('blur', this.onblurOuter);
-            targetElm.removeEventListener('click', this.onclickOuter);
-            targetElm.removeEventListener('input', this.oninputOuter);
-            targetElm.removeEventListener('keydown', this.onkeydownOuter);
-        });
-        this.addEventFormItem(elm.name, {
-            blur : this.onblurOuter,
-            click : this.onclickOuter,
-            input : this.oninputOuter,
-            keydown : this.onkeydownOuter
-        });
         this.#addReplaceEvent(elm);
     }
 }

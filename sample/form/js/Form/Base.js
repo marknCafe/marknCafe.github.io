@@ -105,11 +105,6 @@ export class FCBase {
     set enabledSubmit (bool) {
         this.#enabledSubmit = bool ? true : false;
     }
-    get enabledSubmit () { return this.#enabledSubmit; }
-    get onblurOuter () { return this.#onblurOuter; }
-    get onclickOuter () { return this.#onclickOuter; }
-    get oninputOuter () { return this.#oninputOuter; }
-    get onkeydownOuter () { return this.#onkeydownOuter; }
     set callbackFnView (func = parentNode => {}) {
         if (func instanceof Function == false) { throw new TypeError('callbackFnView'); }
         this.#view = func;
@@ -146,20 +141,30 @@ export class FCBase {
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     /* 入力要素管理関連 */
-    addItem (elm) { this.#list.addItem(elm); }
+    addItem (elm) {
+        if (this.#list.addItem(elm) == false) {
+            return false;
+        }
+        this.addEventFormItem(elm.name, {
+            blur : this.#onblurOuter,
+            click : this.#onclickOuter,
+            input : this.#oninputOuter,
+            keydown : this.#onkeydownOuter
+        });
+    }
     getItem (name) { return this.#list.getItem(name); }
     keys () { return this.#list.keys(); }
     values () { return this.#list.values(); }
     enttires () { return this.#list.entries(); }
-    has (key) { return this.#list.has(key); }
-    forEach (cbFunc = (vlaue, key) => { undefined; }) {
+    has (name) { return this.#list.has(name); }
+    forEach (cbFunc = (vlaue, name) => { undefined; }) {
         this.#list.forEach(cbFunc);
     }
-    getValues (key) { return this.#list.getValues(key); }
-    isEmpty (key) { return this.#list.isEmpty(key); }
-    clearValue (key) { return this.#list.clearValue(key); }
+    getValues (name) { return this.#list.getValues(name); }
+    isEmpty (name) { return this.#list.isEmpty(name); }
+    clearValue (name) { return this.#list.clearValue(name); }
     clearValues() { return this.#list.clearValues(); }
-    setValue (key, value) { this.#list.setValue(key, value); }
+    setValue (name, value) { this.#list.setValue(name, value); }
     setValues (data) { this.#list.setValues(data); }
     getCollectedFormData () { return this.#list.getCollectedFormData(); }
     querySelector (query) { return this.#list.parentNode.querySelector(query); }
@@ -172,8 +177,8 @@ export class FCBase {
     removeEventList (type = '', func) {
         this.#eventList.removeEventList(type, func);
     }
-    addEventFormItem (key, {blur, click, keydown, input} = new FCEventHandlerList()) {
-        this.querySelectorAll(`[name=${key}]`).forEach(elm => {
+    addEventFormItem (name, {blur, click, keydown, input} = new FCEventHandlerList()) {
+        this.querySelectorAll(`[name=${name}]`).forEach(elm => {
             if (blur) elm.addEventListener('blur', blur, false);
             const tagName = elm.tagName;
             const isInput = tagName == 'INPUT' ? true : false;
@@ -192,7 +197,7 @@ export class FCBase {
         cbFnList.click = this.#onclickOuter;
         cbFnList.keydown = this.#onkeydownOuter;
         cbFnList.input = this.#oninputOuter;
-        this.forEach((value, key) => this.addEventFormItem(key, cbFnList) );
+        this.forEach((value, name) => this.addEventFormItem(name, cbFnList) );
     }
     #genCBFnBlurOuter () {
         const fc = this;
@@ -342,7 +347,8 @@ class FCElementCollection {
                 execludeList[name] = true;
                 this.#map.delete(name);
             } else if (this.#map.has(name) == false) {
-                this.#map.set(name, elm);
+                const nodeList = this.#form.querySelectorAll(`[name="${elm.name}"]`);
+                this.#map.set(elm.name, nodeList);
             }
         });
     }
@@ -353,24 +359,26 @@ class FCElementCollection {
     addItem (elm) {
         const validElm = elm instanceof HTMLInputElement || elm instanceof HTMLSelectElement || elm instanceof HTMLTextAreaElement;
         if (validElm == false) { throw new TypeError('addItem'); }
+        if (elm.name == '' || elm.name == undefined) { throw new TypeError('Attribute "name" is not defined.'); }
         if (elm.classList.contains('exclude') == true) {
             return false;
         }
         if (this.#map.has(elm.name) == false) {
-            this.#map.set(elm.name, elm);
+            const nodeList = this.#form.querySelectorAll(`[name="${elm.name}"]`);
+            if (nodeList.length == 0) { throw new TypeError('Element is not included in HTMLFormElement.'); }
+            this.#map.set(elm.name, nodeList);
         }
         return true;
     }
     getItem (name) {
-        if (this.#map.has(name) == false) { throw FCNotExistsExeption('getItem'); }
+        if (this.#map.has(name) == false) { throw new FCNotExistsExeption('getItem'); }
         return this.#map.get(name);
     }
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-    getValues (key) {
-        const nodeList = this.#form.querySelectorAll(`[name="${key}"]`);
-        if (nodeList.length == 0) { throw new FCNotExistsExeption('getValue'); }
+    getValues (name) {
+        if (this.#map.has(name) == false) { throw new FCNotExistsExeption('getValues'); }
         const values = [];
-        nodeList.forEach(elm => {
+        this.getItem(name).forEach(elm => {
             if (elm.tagName == 'SELECT') {
                 this.#getValsSelectElm(elm).forEach(selectedElm => values.push(selectedElm));
             } else {
@@ -396,15 +404,15 @@ class FCElementCollection {
         return values;
     }
 
-    isEmpty (key) {
-        const values = this.getValues(key);
+    isEmpty (name) {
+        const values = this.getValues(name);
         if (values.length == 0) { return true; }
-        return this.getValues(key).some(value => (value == '' || value == undefined || value == null) );
+        return this.getValues(name).some(value => (value == '' || value == undefined || value == null) );
     }
 
-    clearValue (key) {
-        if (this.has(key) == false) { throw new FCNotExistsExeption('clearValue'); }
-        this.#form.querySelectorAll(`[name="${key}"]`).forEach(elm => {
+    clearValue (name) {
+        if (this.has(name) == false) { throw new FCNotExistsExeption('clearValue'); }
+        this.#form.querySelectorAll(`[name="${name}"]`).forEach(elm => {
             if (elm.tagName == 'SELECT') {
                 elm.value = '';
             } else if (FCElementCollection.#regexTypeCR.test(elm.type) == true) {
@@ -416,7 +424,7 @@ class FCElementCollection {
     }
 
     clearValues () {
-        this.forEach((v, key) => this.clearValue(key));
+        this.forEach((v, name) => this.clearValue(name));
     }
 
     setValues (data) {
@@ -428,16 +436,15 @@ class FCElementCollection {
     }
     #setValuesFormData (data) {
         if (data instanceof FormData == false) { throw new TypeError('setValuesFormData'); }
-        this.forEach((v, key) => this.setValue(key, data.getAll(key)) );
+        this.forEach((v, name) => this.setValue(name, data.getAll(name)) );
     }
     #setValuesList(data) {
-        this.forEach((v, key) => this.setValue(key, data[key] || ''));
+        this.forEach((v, name) => this.setValue(name, data[name] || ''));
     }
 
-    setValue (key, value) {
-        if (this.#map.has(key) == false) { throw new FCNotExistsExeption('setValue'); }
-        const nodeList = this.#form.querySelectorAll(`[name="${key}"]`); // '[name="' + key + '"]');
-        if (nodeList.length == 0) { throw new FCNotExistsExeption('setValue'); }
+    setValue (name, value) {
+        if (this.#map.has(name) == false) { throw new FCNotExistsExeption('setValue'); }
+        const nodeList = this.getItem(name);
         if (value instanceof Array == true) {
             this.#setValueArray(nodeList, value);
         } else {
@@ -466,18 +473,18 @@ class FCElementCollection {
         //console.trace();
         const orgData = new FormData(this.#form);
         const data = new FormData();
-        this.#map.forEach((v, key) => {
-            const elmValues = orgData.getAll(key);
+        this.#map.forEach((v, name) => {
+            const elmValues = orgData.getAll(name);
             if (elmValues.length > 0) {
-                elmValues.forEach( value => data.append(key, value) );    
+                elmValues.forEach( value => data.append(name, value) );    
             } else {
-                data.append(key, '');
+                data.append(name, '');
             }
         });
         return data;
     }
     forEach (cbFn) { this.#map.forEach(cbFn); }
-    has (key) { return this.#map.has(key); }
+    has (name) { return this.#map.has(name); }
     keys () { return this.#map.keys(); }
     values () { return this.#map.values(); }
     entries () { return this.#map.entries(); }
