@@ -44,10 +44,10 @@ form.controllerSettings({
 .addInitTask(ctr => {
     const fc = ctr.get('enquate');
     fc.addCondRequire('etc-hobby', 'hobby', 3, 'その他の内容を入力してください。', { useDisabled : false }); // 条件付き必須の定義
-    const cbFnDisabled = (FnCond, key) => {
+    const cbFnDisabled = (condition, key) => {
         const elm = fc.querySelector(`.item.${key}`);
         elm.classList.remove('hide');
-        if (FnCond() == false) elm.classList.add('hide');
+        if (condition == false) elm.classList.add('hide');
     };
     fc.addCondRequireOr(['q3', 'q4'], [['q1', 1], ['q2', 2]], '質問１を「はい」、または質問２を「いいえ」と回答された方は必須です。', {cbFnDisabled : cbFnDisabled});
     fc.addCondRequireAnd(['q7', 'q8'], [['q5', 1], ['q6', 2]], '質問５を「はい」、かつ質問６を「いいえ」と回答された方は必須です。', {cbFnDisabled : cbFnDisabled});

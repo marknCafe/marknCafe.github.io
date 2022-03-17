@@ -158,25 +158,26 @@ export class FCForm extends FCBase {
             return true;
         };
     }
-    #genCBFnInputDisabled (baseKey, cbFnCond, extendFn = (cbFnCond, key) => {}) {
+    #genCBFnInputDisabled (baseKey, cbFnCond, extendFn = (condition, key) => {}) {
         return () => {
             const baseElms = this.querySelectorAll(`[name="${baseKey}"]`);
-            if (cbFnCond()) {
+            const condition = cbFnCond();
+            if (condition) {
                 baseElms.forEach(elm => elm.disabled = false);
             } else {
                 baseElms.forEach(elm => elm.disabled = true);
                 this.clearValue(baseKey);
             }
-            extendFn(cbFnCond, baseKey);
+            extendFn(condition, baseKey);
         };
     }
     addCondRequireOr (baseKeys = [], targetArray = [], message = '',
-    {useDisabled = true, eventType = [], cbFnDisabled = (cbFnCond, key) => {}} = {}) {
+    {useDisabled = true, eventType = [], cbFnDisabled = (condition, key) => {}} = {}) {
         const cbFnCond = () => targetArray.some(([key, cond]) => this.isMatch(key, cond));
         this.#addCondRequireMultiple(baseKeys, targetArray, message, useDisabled, eventType, cbFnCond, cbFnDisabled, 'CondRequireOr');
     }
     addCondRequireAnd (baseKeys = [], targetArray = [], message = '',
-    {useDisabled = true, eventType = [], cbFnDisabled = (cbFnCond, key) => {}} = {}) {
+    {useDisabled = true, eventType = [], cbFnDisabled = (condition, key) => {}} = {}) {
         const cbFnCond = () => targetArray.some(([key, cond]) => this.isMatch(key, cond) == false) == false;
         this.#addCondRequireMultiple(baseKeys, targetArray, message, useDisabled, eventType, cbFnCond, cbFnDisabled, 'CondRequireAnd');
     }
