@@ -33,9 +33,6 @@ export class FCBase {
 
     static #regexType = /email|number|password|range|search|tel|text|url/i;
 
-    static get regexTypeCR () { return FCElementCollection.regexTypeCR; }
-
-    // コンストラクタ
     constructor (elm) {
         this.#list = new FCElementCollection(elm);
         this.#eventList = new FCEventList();
@@ -119,7 +116,6 @@ export class FCBase {
         this.#promiseTimeout = sec * 1000;
     }
     get promiseTimeout () { return this.#promiseTimeout / 1000; }
-    get promiseTimeoutMiriSec () { return this.#promiseTimeout; }
 
     // メソッド
     view () {
@@ -231,7 +227,7 @@ export class FCEventHandlerList {
     #click = undefined;
     #keydown = undefined;
     #input = undefined;
-    //constructor () {}
+
     set blur (cbFn) {
         if (cbFn instanceof Function == false) { throw TypeError('blur'); }
         this.#blur = cbFn;
@@ -314,7 +310,6 @@ class FCEventType {
     static get afterHide () { return 'afterHide'; }
 }
 
-//class FCElementCollection extends Map {
 class FCElementCollection {
     static #D = false;
     static #regexTypeCR = /^checkbox|radio$/i;

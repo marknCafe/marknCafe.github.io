@@ -8,6 +8,8 @@ export class FCForm extends FCBase {
  * ブラウザ毎に定義されているエラーメッセージを独自のメッセージに定義し、統一されたエラーメッセージを表示することができます。
  */
     static #D = false;
+    static #regexTypeCR = /^checkbox|radio$/i;
+
     #message = {};
     #extValidation = {};
     #forcedValidation = {};
@@ -437,7 +439,7 @@ export class FCForm extends FCBase {
         classList.remove('invalid', 'valid');
         classList.add(className);
 
-        if (FCBase.regexTypeCR.test(elm.type)) {
+        if (FCForm.#regexTypeCR.test(elm.type)) {
             elm.form.querySelectorAll(`[name=${elm.name}]`).forEach(elm => {
                 const parentClassList = elm.parentNode.classList;
                 parentClassList.remove('invalid', 'valid');
