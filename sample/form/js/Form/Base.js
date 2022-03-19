@@ -182,7 +182,7 @@ export class FCBase {
             if (isInput && FCBase.#regexType.test(elm.type) || tagName =='TEXTAREA') {
                 if (keydown) elm.addEventListener('keydown', keydown, false);
                 if (input) elm.addEventListener('input', input, false);
-            } else if (isInput && FCBase.regexTypeCR.test(elm.type) || tagName == 'SELECT') {
+            } else if (isInput && FCElementCollection.regexTypeCR.test(elm.type) || tagName == 'SELECT') {
                 if (click) elm.addEventListener('click', click, false);
                 //if (cbFnList.input) elm.addEventListener('input', cbFnList.input, false);
             }
