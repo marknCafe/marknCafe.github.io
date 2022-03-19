@@ -296,8 +296,8 @@ export class FCForm extends FCBase {
         timer.start();
         let isValid = true;
         try {
-            for (let elm of this.values()) {
-                const result = await this.#genPromiseVSFI(elm, event, promises);
+            for (let nodeList of this.values()) {
+                const result = await this.#genPromiseVSFI(nodeList.item(i), event, promises);
                 if (result.isInvalid) {
                     isValid = false;
                     break;
@@ -316,26 +316,6 @@ export class FCForm extends FCBase {
         return pr;
     }
 
-    #genCbFuncVld (elms, event) {
-        const fc = this;
-        const resArray = [];
-        const cbFunc = async (iteData) => {
-            if (iteData.done) { return true; }
-            try {
-                const result = await fc.validation(iteData.value, false, event);
-                if (result.isInvalid) {
-                    return false;
-                }
-                resArray.push({status: 'fulfilled', value: result});
-                if (iteData.done) { return true; }
-                else { return cbFunc(elms.next()); }
-            } catch (reason) {
-                throw reason;
-            }
-        };
-        return cbFunc;
-    }
-
     testElm (elm, event) {
         const fc = this;
         const pr = fc.validation(elm, true, event);
@@ -347,12 +327,12 @@ export class FCForm extends FCBase {
 
     test (event) {
         const promises = [];
-        this.forEach( elm => promises.push(this.validation(elm, true, event)) );
+        this.forEach( nodeList => promises.push(this.validation(nodeList.item(0), true, event)) );
         return this.#genPromiseValidationAll(promises, 'test');
     }
     validationAll (event) {
         const promises = [];
-        this.forEach( elm => promises.push(this.validation(elm, false, event)) );
+        this.forEach( nodeList => promises.push(this.validation(nodeList.item(0), false, event)) );
         return this.#genPromiseValidationAll(promises, 'validationAll');
     }
 
@@ -466,23 +446,22 @@ export class FCForm extends FCBase {
         }
 
         if (this.#useWarnElm) {
-            const elmWarning = this.#getElmWarnig(elm);
-            const clElmWarning = elmWarning.classList;
-            clElmWarning.remove('invalid', 'valid');
-            clElmWarning.add(className);
-            elmWarning.innerHTML = '';
-
-            if (isInvalid) {
-                elmWarning.appendChild(document.createTextNode(result.message));
-            }
+            this.#getElmWarnig(elm).forEach(elm => {
+                elm.classList.remove('invalid', 'valid');
+                elm.classList.add(className);
+                elm.innerHTML = '';
+                if (isInvalid) {
+                    elm.appendChild(document.createTextNode(result.message));
+                }
+            });
         } else if (isInvalid) {
             elm.setCustomValidity(result.message);
             elm.reportValidity();
         }
     }
     #getElmWarnig (elm) {
-        const elmWarning = elm.form.querySelector(`.warning.${elm.name}, .warning > .${elm.name}`);
-        if (elmWarning == null) {
+        const elmWarning = elm.form.querySelectorAll(`.warning.${elm.name}, .warning > .${elm.name}`);
+        if (elmWarning.length == 0) {
             throw new FCNotExistsExeption(`Element for warning "${elm.name}'"`);
         }
         return elmWarning;

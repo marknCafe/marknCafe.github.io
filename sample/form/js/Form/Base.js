@@ -151,14 +151,15 @@ export class FCBase {
             input : this.#oninputOuter,
             keydown : this.#onkeydownOuter
         });
+        return true;
     }
     getItem (name) { return this.#list.getItem(name); }
     keys () { return this.#list.keys(); }
-    values () { return this.#list.values(); }
-    enttires () { return this.#list.entries(); }
+    values (getValue = false) { return this.#list.values(getValue); }
+    enttires (getValue = false) { return this.#list.entries(getValue); }
     has (name) { return this.#list.has(name); }
-    forEach (cbFunc = (vlaue, name) => { undefined; }) {
-        this.#list.forEach(cbFunc);
+    forEach (cbFunc = (vlaue, name) => { undefined; }, getValue = false) {
+        this.#list.forEach(cbFunc, getValue);
     }
     getValues (name) { return this.#list.getValues(name); }
     isEmpty (name) { return this.#list.isEmpty(name); }
@@ -337,18 +338,21 @@ class FCElementCollection {
         this.#form = elmForm;
     }
     #collectItem () {
-        const list = this.#form.querySelectorAll('input:not([type=submit]), textarea, select');
-        if (FCElementCollection.#D && list.length == 0) { console.log('There is no item.'); }
-        const execludeList = {};
-        list.forEach((elm) => {
+        let nodeList;
+        if (this.#form.id) {
+            const id = this.#form.id;
+            const query = `form#${id} input:not([type=submit]), form#${id} textarea, form#${id} select, input[form="${id}"]:not([type=submit]), textarea[form="${id}"], select[form="${id}"]`;
+            nodeList = document.querySelectorAll(query);
+        } else {
+            nodeList = this.#form.querySelectorAll('input:not([type=submit]), textarea, select');
+        }
+        if (FCElementCollection.#D && nodeList.length == 0) { console.log('There is no item.'); }
+        const execludeList = [];
+        nodeList.forEach((elm) => {
             const name = elm.name;
-            if (name in execludeList == true) { return; }
-            if (elm.classList.contains('exclude') == true) {
-                execludeList[name] = true;
-                this.#map.delete(name);
-            } else if (this.#map.has(name) == false) {
-                const nodeList = this.#form.querySelectorAll(`[name="${elm.name}"]`);
-                this.#map.set(elm.name, nodeList);
+            if (execludeList.indexOf(name) > -1) { return; }
+            if (this.addItem(elm) == false) {
+                execludeList.push(name);
             }
         });
     }
@@ -359,16 +363,32 @@ class FCElementCollection {
     addItem (elm) {
         const validElm = elm instanceof HTMLInputElement || elm instanceof HTMLSelectElement || elm instanceof HTMLTextAreaElement;
         if (validElm == false) { throw new TypeError('addItem'); }
-        if (elm.name == '' || elm.name == undefined) { throw new TypeError('Attribute "name" is not defined.'); }
-        if (elm.classList.contains('exclude') == true) {
-            return false;
+        const name = elm.name;
+        if (name == '' || name == undefined) { throw new TypeError('Attribute "name" is not defined.'); }
+        if (this.#map.has(name)) {
+            if ([...this.#map.get(name).values()].indexOf(elm) == -1) {
+                this.#map.set(name, this.#genNodeListByName(name));   
+            }
+            return true;
         }
-        if (this.#map.has(elm.name) == false) {
-            const nodeList = this.#form.querySelectorAll(`[name="${elm.name}"]`);
-            if (nodeList.length == 0) { throw new TypeError('Element is not included in HTMLFormElement.'); }
-            this.#map.set(elm.name, nodeList);
+
+        const nodeList = this.#genNodeListByName(name);
+        if (nodeList.length == 0) { throw new TypeError('Element is not included in HTMLFormElement.'); }
+        for (let node of nodeList.values()) {
+            if (node.classList.contains('exclude') == true) {
+                return false;
+            }
         }
+        this.#map.set(name, nodeList);
         return true;
+    }
+    #genNodeListByName (name) {
+        if (this.#form.id) {
+            const id = this.#form.id;
+            return document.querySelectorAll(`form#${id} [name="${name}"], [name="${name}"][form="${id}"]`);
+        } else {
+            return this.#form.querySelectorAll(`[name="${name}"]`);
+        }
     }
     getItem (name) {
         if (this.#map.has(name) == false) { throw new FCNotExistsExeption('getItem'); }
@@ -483,11 +503,39 @@ class FCElementCollection {
         });
         return data;
     }
-    forEach (cbFn) { this.#map.forEach(cbFn); }
+    forEach (cbFn, getValue = false) {
+        if (getValue == false ) {
+            this.#map.forEach(cbFn);
+        } else {
+            this.#map.forEach((nodeList, name) => {
+                cbFn(this.getValues(name), name);
+            });
+        }
+    }
     has (name) { return this.#map.has(name); }
     keys () { return this.#map.keys(); }
-    values () { return this.#map.values(); }
-    entries () { return this.#map.entries(); }
+    values (getValue = false) {
+        if (getValue == false) {
+            return this.#map.values();
+        }
+        const fn = this;
+        return function* () {
+            for (let name of fn.#map.keys()) {
+                yield fn.getValue(name);
+            }
+        }
+    }
+    entries (getValue = false) {
+        if (getValue == false) {
+            return this.#map.entries();
+        }
+        const fn = this;
+        return function* () {
+            for (let name of fn.#map.keys()) {
+                yield [name, fn.getValue(name)];
+            }
+        }
+    }
 }
 
 class FCSimpleIterator {
@@ -528,7 +576,6 @@ class FCOnError {
         });
     }
     static #callbackFnOnError (event) {
-        console.dir(event);
         FCOnError.#errorList
         .forEach(data => FCOnError.#exectorOnError(event, data));
         FCOnError.#errorUsed = [];
