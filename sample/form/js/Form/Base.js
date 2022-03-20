@@ -153,7 +153,7 @@ export class FCBase {
     getItem (name) { return this.#list.getItem(name); }
     keys () { return this.#list.keys(); }
     values (getValue = false) { return this.#list.values(getValue); }
-    enttires (getValue = false) { return this.#list.entries(getValue); }
+    entries (getValue = false) { return this.#list.entries(getValue); }
     has (name) { return this.#list.has(name); }
     forEach (cbFunc = (vlaue, name) => { undefined; }, getValue = false) {
         this.#list.forEach(cbFunc, getValue);
@@ -428,38 +428,36 @@ class FCElementCollection {
 
     clearValue (name) {
         if (this.has(name) == false) { throw new FCNotExistsExeption('clearValue'); }
-        this.#form.querySelectorAll(`[name="${name}"]`).forEach(elm => {
-            if (elm.tagName == 'SELECT') {
-                elm.value = '';
-            } else if (FCElementCollection.#regexTypeCR.test(elm.type) == true) {
-                elm.checked = false;
+        this.getItem(name).forEach(node => {
+            if (node.tagName == 'SELECT') {
+                node.value = '';
+            } else if (FCElementCollection.#regexTypeCR.test(node.type) == true) {
+                node.checked = false;
             } else {
-                elm.value = '';
-            }
+                node.value = '';
+            }            
         });
     }
 
     clearValues () {
-        this.forEach((v, name) => this.clearValue(name));
+        for(let name of this.keys()) {
+            this.clearValue(name);
+        }
     }
 
     setValues (data) {
         if (data instanceof FormData) {
-            this.#setValuesFormData(data);
+            this.forEach((nodeList, name) => this.setValue(name, data.getAll(name)) );
+        } else if (data instanceof Map) {
+            this.forEach((nodeList, name) => this.setValue(name, data.get(name)) || '');
         } else {
-            this.#setValuesList(data);
+            this.forEach((nodeList, name) => this.setValue(name, data[name] || ''));
         }
-    }
-    #setValuesFormData (data) {
-        if (data instanceof FormData == false) { throw new TypeError('setValuesFormData'); }
-        this.forEach((v, name) => this.setValue(name, data.getAll(name)) );
-    }
-    #setValuesList(data) {
-        this.forEach((v, name) => this.setValue(name, data[name] || ''));
     }
 
     setValue (name, value) {
         if (this.#map.has(name) == false) { throw new FCNotExistsExeption('setValue'); }
+        //this.clearValue(name);
         const nodeList = this.getItem(name);
         if (value instanceof Array == true) {
             this.#setValueArray(nodeList, value);
@@ -468,15 +466,13 @@ class FCElementCollection {
         }
     }
     #_setValue(nodeList, value) {
-        nodeList.forEach(elm => {
-            if (elm.tagName == 'SELECT') {
-                elm.querySelector(`[value="${value}"]`).selected = true;
-            }
-            else if (FCElementCollection.#regexTypeCR.test(elm.type) == true) {
+        nodeList.forEach(node => {
+            if (node.tagName == 'SELECT') {
+                node.querySelector(`[value="${value}"]`).selected = true;
+            } else if (FCElementCollection.#regexTypeCR.test(node.type) == true) {
                 if (elm.value == value)  { elm.checked = true; }
-            }
-            else {
-                elm.value = value;
+            } else {
+                node.value = value;
             }
         });
     }
@@ -515,22 +511,22 @@ class FCElementCollection {
             return this.#map.values();
         }
         const fn = this;
-        return function* () {
+        return (function* () {
             for (let name of fn.#map.keys()) {
-                yield fn.getValue(name);
+                yield fn.getValues(name);
             }
-        }
+        })();
     }
     entries (getValue = false) {
         if (getValue == false) {
             return this.#map.entries();
         }
         const fn = this;
-        return function* () {
+        return (function* () {
             for (let name of fn.#map.keys()) {
-                yield [name, fn.getValue(name)];
+                yield [name, fn.getValues(name)];
             }
-        }
+        })();
     }
 }
 
