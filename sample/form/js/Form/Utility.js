@@ -53,12 +53,11 @@ export class FCTimerState {
 }
 
 export class FCPromiseTimer extends FCTimer {
-    constructor(delay = 0, promises, targetName) {
-        super(FCPromiseTimer.#genCBFn(promises, targetName), delay);
+    constructor(delay = 0) {
+        super(FCPromiseTimer.#genCBFn(), delay);
     }
-    static #genCBFn (promises, name) {
-        return (argument) => {
-            const [promises, name] = argument;
+    static #genCBFn () {
+        return ([promises, name] = []) => {
             if (promises instanceof Array == false) { throw new TypeError('FCPromiseTimer.promises');}
             console.dir(promises);
             const message = (name ? `(${name})` : '') + 'Some Promise objects are still "pending". ' +
@@ -66,6 +65,7 @@ export class FCPromiseTimer extends FCTimer {
             throw new Error(message);
         };
     }
+    start ([promises, name] = []) { super.start([promises, name]); }
 }
 
 export class FCData {

@@ -218,8 +218,8 @@ export class FCForm extends FCBase {
     static #genCbfunc () {
         return (event, fc) => {
             const pr = fc.validation(event.currentTarget, false, event);
-            const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], event.type);
-            timer.start();
+            const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec);
+            timer.start([[pr], event.type]);
             pr.then(() => { timer.clear(); })
             .catch(result => fc.#cbfCatchValidPromise(result, `${event.type}Event`) );
         };
@@ -236,8 +236,8 @@ export class FCForm extends FCBase {
             timer = new FCTimer(() => {
                 timer = undefined;
                 const pr = fc.validation(elm, false, event);
-                const pTimer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], event.type);
-                pTimer.start();
+                const pTimer = new FCPromiseTimer(this.promiseTimeoutMiriSec);
+                pTimer.start([[pr], event.type]);
                 pr.then(result => {
                     pTimer.clear();
                     if (elm.classList.contains('notrim')) { return; }
@@ -294,8 +294,8 @@ export class FCForm extends FCBase {
     }
     async #validationStopFindInvalid (event) {
         const promises = [];
-        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, promises, 'validationStopFindInvalid');
-        timer.start();
+        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec);
+        timer.start([promises, 'validationStopFindInvalid']);
         let isValid = true;
         try {
             for (let nodeList of this.values()) {
@@ -321,8 +321,8 @@ export class FCForm extends FCBase {
     testElm (elm, event) {
         const fc = this;
         const pr = fc.validation(elm, true, event);
-        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], 'testElm');
-        timer.start();
+        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec);
+        timer.start([[pr], 'testElm']);
         pr.then(() => { timer.clear(); });
         return pr;
     }
@@ -339,8 +339,8 @@ export class FCForm extends FCBase {
     }
 
     async #genPromiseValidationAll (promises, name) {
-        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, promises, name);
-        timer.start();
+        const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec);
+        timer.start([promises, name]);
         try {
             const result = await Promise.allSettled(promises);
             timer.clear();
@@ -365,8 +365,8 @@ export class FCForm extends FCBase {
             this.#forcedValidation[elm.name]
             .forEach(key => {
                 const pr = this.validation(this.querySelector(`[name=${key}]`), noUseMessage, event);
-                const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec, [pr], 'forcedValidation');
-                timer.start();
+                const timer = new FCPromiseTimer(this.promiseTimeoutMiriSec);
+                timer.start([[pr], 'forcedValidation']);
                 pr.then(() => { timer.clear(); })
                 .catch(result => this.#cbfCatchValidPromise(result, 'forcedValidation') );
             });

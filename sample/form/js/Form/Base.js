@@ -116,6 +116,7 @@ export class FCBase {
         this.#promiseTimeout = sec * 1000;
     }
     get promiseTimeout () { return this.#promiseTimeout / 1000; }
+    get promiseTimeoutMiriSec () { return this.#promiseTimeout; }
 
     // メソッド
     view () {
