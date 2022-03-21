@@ -470,7 +470,7 @@ class FCElementCollection {
             if (node.tagName == 'SELECT') {
                 node.querySelector(`[value="${value}"]`).selected = true;
             } else if (FCElementCollection.#regexTypeCR.test(node.type) == true) {
-                if (elm.value == value)  { elm.checked = true; }
+                if (node.value == value)  { node.checked = true; }
             } else {
                 node.value = value;
             }
