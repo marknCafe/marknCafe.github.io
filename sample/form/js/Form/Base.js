@@ -142,6 +142,7 @@ export class FCBase {
         if (this.#list.addItem(elm) == false) {
             return false;
         }
+
         this.addEventFormItem(elm.name, {
             blur : this.#onblurOuter,
             click : this.#onclickOuter,
@@ -175,19 +176,20 @@ export class FCBase {
     removeEventList (type = '', func) {
         this.#eventList.removeEventList(type, func);
     }
-    addEventFormItem (name, {blur, click, keydown, input} = new FCEventHandlerList()) {
-        this.querySelectorAll(`[name=${name}]`).forEach(elm => {
-            if (blur) elm.addEventListener('blur', blur, false);
-            const tagName = elm.tagName;
-            const isInput = tagName == 'INPUT' ? true : false;
-            if (isInput && FCBase.#regexType.test(elm.type) || tagName =='TEXTAREA') {
-                if (keydown) elm.addEventListener('keydown', keydown, false);
-                if (input) elm.addEventListener('input', input, false);
-            } else if (isInput && FCElementCollection.regexTypeCR.test(elm.type) || tagName == 'SELECT') {
-                if (click) elm.addEventListener('click', click, false);
-                //if (cbFnList.input) elm.addEventListener('input', cbFnList.input, false);
-            }
-        });
+    addEventFormItem (name, eventHandlerList = new FCEventHandlerList()) {
+        this.#list.genNodeListByName(name)
+        .forEach(elm => this.#addEventFormItem(elm, eventHandlerList));
+    }
+    #addEventFormItem (elm, {blur, click, keydown, input} = new FCEventHandlerList()) {
+        if (blur) elm.addEventListener('blur', blur, false);
+        const tagName = elm.tagName;
+        const isInput = tagName == 'INPUT' ? true : false;
+        if (isInput && FCBase.#regexType.test(elm.type) || tagName =='TEXTAREA') {
+            if (keydown) elm.addEventListener('keydown', keydown, false);
+            if (input) elm.addEventListener('input', input, false);
+        } else if (isInput && FCElementCollection.regexTypeCR.test(elm.type) || tagName == 'SELECT') {
+            if (click) elm.addEventListener('click', click, false);
+        }
     }
     #addEventFormItems () {
         const cbFnList = new FCEventHandlerList();
@@ -195,7 +197,9 @@ export class FCBase {
         cbFnList.click = this.#onclickOuter;
         cbFnList.keydown = this.#onkeydownOuter;
         cbFnList.input = this.#oninputOuter;
-        this.forEach((value, name) => this.addEventFormItem(name, cbFnList) );
+        this.forEach((nodeList, name) => {
+            nodeList.forEach(elm => this.#addEventFormItem(elm, cbFnList));
+        });
     }
     #genCBFnBlurOuter () {
         const fc = this;
@@ -363,12 +367,12 @@ class FCElementCollection {
         if (name == '' || name == undefined) { throw new TypeError('Attribute "name" is not defined.'); }
         if (this.#map.has(name)) {
             if ([...this.#map.get(name).values()].indexOf(elm) == -1) {
-                this.#map.set(name, this.#genNodeListByName(name));   
+                this.#map.set(name, this.genNodeListByName(name));   
             }
             return true;
         }
 
-        const nodeList = this.#genNodeListByName(name);
+        const nodeList = this.genNodeListByName(name);
         if (nodeList.length == 0) { throw new TypeError('Element is not included in HTMLFormElement.'); }
         for (let node of nodeList.values()) {
             if (node.classList.contains('exclude') == true) {
@@ -378,7 +382,7 @@ class FCElementCollection {
         this.#map.set(name, nodeList);
         return true;
     }
-    #genNodeListByName (name) {
+    genNodeListByName (name) {
         if (this.#form.id) {
             const id = this.#form.id;
             return document.querySelectorAll(`form#${id} [name="${name}"], [name="${name}"][form="${id}"]`);
@@ -551,6 +555,7 @@ class FCOnError {
     static #errorList = [];
     static #errorUsed = [];
     static #isSetOnError = false;
+    static #targetFc = undefined;
 
     static addList (fc, onErrorList) {
         const checkFC = (fc instanceof FCBase);
@@ -558,8 +563,10 @@ class FCOnError {
         if (checkFC == false || checkList == false) { throw new Error('FCOnError.addList'); }
         FCOnError.#errorList.push([fc, onErrorList]);
     }
-    static #exectorOnError (event, data) {
-        const [fc, list] = data;
+    static #exectorOnError (event, [fc, list] = []) {
+        if (FCOnError.#targetFc instanceof FCBase && FCOnError.#targetFc !== fc) {
+            return;
+        }
         list.forEach(func => {
             if (FCOnError.#errorUsed.some(f => f === func) == false) {
                 func(event, fc);
@@ -577,7 +584,8 @@ class FCOnError {
         FCOnError.#isSetOnError = true;
         addEventListener('error', FCOnError.#callbackFnOnError);
     }
-    static exec (reason) {
+    static exec (reason, fc = undefined) {
+        FCOnError.#targetFc = fc;
         let event;
         if (reason instanceof Error) {
             event = new ErrorEvent(reason.name, {error : reason, message : reason.message});
@@ -585,6 +593,7 @@ class FCOnError {
             event = new ErrorEvent('some error', { error : new Error(reason), message : reason});
         }
         FCOnError.#callbackFnOnError(event);
+        FCOnError.#targetFc = undefined;
         console.error(event);
     }
 }
