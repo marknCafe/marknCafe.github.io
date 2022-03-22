@@ -473,7 +473,7 @@ class FCElementCollection {
         });
         return data;
     }
-    forEach (func), getValue = false) {
+    forEach (func, getValue = false) {
         if (getValue == false ) {
             this.#map.forEach(func);
         } else {
