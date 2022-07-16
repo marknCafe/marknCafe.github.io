@@ -5,8 +5,8 @@ const form = new Form('form1');
 form.controllerSettings({
     expires : 300,
     //onExpires : () => {}
-})
-.formSettings({
+});
+form.formSettings({
     useWarnElm : true,
     delayTime : 1000,
     promiseTimeout : 2,
@@ -15,16 +15,16 @@ form.controllerSettings({
     marginMaxLength : 3
 })
 
-.append('agreement', FCType.Form, 'div.form.agreement') // 同意画面
-.append('enquate', FCType.Form, 'div.form.enquate') // アンケートフォーム
-.append('userinfo', FCType.Form, 'div.form.userinfo') // 基本情報フォーム
-.append('address', FCType.Form, 'div.form.address') // 住所登録フォーム
+;form.append('agreement', FCType.Form, 'div.form.agreement') // 同意画面
+;form.append('enquate', FCType.Form, 'div.form.enquate') // アンケートフォーム
+;form.append('userinfo', FCType.Form, 'div.form.userinfo') // 基本情報フォーム
+;form.append('address', FCType.Form, 'div.form.address') // 住所登録フォーム
 
-.append('confirm', FCType.Confirm, 'div.confirm') // 確認画面
-.append('applied', FCType.NoForm, 'div.applied') // 登録完了画面
-.append('error', FCType.Error, 'div.error', {noStat : true}) // エラー画面
+;form.append('confirm', FCType.Confirm, 'div.confirm') // 確認画面
+;form.append('applied', FCType.NoForm, 'div.applied') // 登録完了画面
+;form.append('error', FCType.Error, 'div.error', {noStat : true}) // エラー画面
 
-.addInitTask(ctr => {
+;form.addInitTask(ctr => {
     const cbfErr = (event, fc) => { // onerrorイベントでエラー画面を表示させる
         const fcErr = ctr.get('error');
         // お試し用です。本番運用ではセキュリティの観点からやらないでください。
@@ -35,13 +35,13 @@ form.controllerSettings({
     };
     ctr.forEach(fc => fc.addEventList('error', cbfErr) );
 })
-.addInitTask(ctr => {
+;form.addInitTask(ctr => {
     const fc = ctr.get('agreement');
     const vmAgree = fc.validityMessage.copy(); // エラーメッセージテンプレートをコピーして専用メッセージを作成する。
     vmAgree.setCbFuncMessage('valueMissing', '申し込むには同意していただく必要があります。'); // 未選択エラー用
     fc.extendValidityMessage('agreement', vmAgree); // FCFormに登録する。使用したい要素のclass属性に接頭辞"vm-"+キー名（今回は"age"）を設定しておく。
 })
-.addInitTask(ctr => {
+;form.addInitTask(ctr => {
     const fc = ctr.get('enquate');
     fc.addCondRequire('etc-hobby', 'hobby', 3, 'その他の内容を入力してください。', { useDisabled : false }); // 条件付き必須の定義
     const cbFnDisabled = (condition, key) => {
@@ -52,7 +52,7 @@ form.controllerSettings({
     fc.addCondRequireOr(['q3', 'q4'], [['q1', 1], ['q2', 2]], '質問１を「はい」、または質問２を「いいえ」と回答された方は必須です。', {cbFnDisabled : cbFnDisabled});
     fc.addCondRequireAnd(['q7', 'q8'], [['q5', 1], ['q6', 2]], '質問５を「はい」、かつ質問６を「いいえ」と回答された方は必須です。', {cbFnDisabled : cbFnDisabled});
 })
-.addInitTask(ctr => {
+;form.addInitTask(ctr => {
     const fc = ctr.get('userinfo');
     const minAge = 13; // 最小年齢をここで変更できるようにしておく
     fc.form.querySelector('[name=age]').min = minAge; //input min属性を上書き
@@ -61,7 +61,7 @@ form.controllerSettings({
     fc.extendValidityMessage('age', vmAge);
     fc.addCondRequire('parental_consent', 'age', value => (value >= minAge && value < 18), '１８歳未満の方は親権者の同意を得る必要があります。');
 })
-.addInitTask(ctr => {
+;form.addInitTask(ctr => {
     const fc = ctr.get('address');
     // 条件付き必須の定義
     fc.addCondRequire('email', 'newsletter', '1', 'メールマガジンの配信希望された場合は必須です。', { useDisabled : true }); //メールマガジンを希望した場合、Emailは必須
@@ -90,7 +90,7 @@ form.controllerSettings({
     });
 })
 
-.confirmSettings({
+;form.confirmSettings({
     enableSubmit : false,
     onSubmit : async (event, fc) => {
         const ctr = form.controller;
@@ -99,7 +99,7 @@ form.controllerSettings({
         ctr.clear(); // hiddenの値も消します
     }
 })
-.addInitTask(ctr => {
+;form.addInitTask(ctr => {
     const fc = ctr.get('confirm');
     const hidden = fc.form.querySelector('[name="hiddenvall"]');
     if (hidden.value == '') {
@@ -113,7 +113,7 @@ form.controllerSettings({
     });
 })
 
-.start()
+;form.start()
 .then(idbReq => {
     form.controller.updateExpires();
     document.getElementById('available').className = 'view';
