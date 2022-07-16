@@ -111,9 +111,9 @@ form.controllerSettings({
         li.classList.add('fccl-prefecture', `v-${key}`);
         li.appendChild(document.createTextNode(value));
     });
-});
-alert('a');
-form.start()
+})
+
+.start()
 .then(idbReq => {
     form.controller.updateExpires();
     document.getElementById('available').className = 'view';
