@@ -19,7 +19,7 @@ export class FCTimer {
         };
     }
     set delay (delay) {
-        if (Number.isInteger(delay) == false) { throw new TypeError('FCTimer.delay'); }
+        if (Number.isInteger(delay) == false || delay < 0) { throw new TypeError('FCTimer.delay'); }
         this.#delay = delay;
     }
     start (argument) {
