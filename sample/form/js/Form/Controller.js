@@ -285,6 +285,7 @@ export class FCController {
             this.#timer.clear();
         }
         const delay = Number(sessionStorage.getItem(this.#keyExpires)) - Number(new Date());
+        if (delay < 0) return;
         this.#timer = new FCTimer(() => {
             this.#clear();
             this.#onExpires(this);
